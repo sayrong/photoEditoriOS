@@ -1,0 +1,15 @@
+input_dir: PhotoEditorTestTask/Resources
+output_dir: PhotoEditorTestTask/Generated/
+
+strings:
+  inputs: en.lproj/Localizable.strings
+  outputs:
+    - templateName: structured-swift5
+      output: L10n.swift
+xcassets:
+  inputs:
+    - Images.xcassets
+    - Colors.xcassets
+  outputs:
+    - templateName: swift5
+      output: Assets.swift

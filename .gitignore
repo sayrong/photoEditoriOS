@@ -1,0 +1,24 @@
+# Xcode
+.DS_Store
+xcuserdata/
+*.xcscmblueprint
+*.xccheckout
+
+# Swift Package Manager
+.build/
+Packages/
+*.resolved
+
+# SwiftGen
+# Исключаем сгенерированные файлы, если они есть в папке
+PhotoEditorTestTask/Generated/
+
+# Build
+DerivedData/
+*.ipa
+*.app
+*.xcarchive
+
+# Дополнительно
+*.log
+*.bak

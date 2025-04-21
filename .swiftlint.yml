@@ -1,0 +1,38 @@
+included:
+  - PhotoEditorTestTask
+excluded:
+  - PhotoEditorTestTask/Generated
+  - Build
+
+disabled_rules:
+  - trailing_whitespace
+  - identifier_name
+
+opt_in_rules:
+  - empty_count
+  - explicit_init
+  - fatal_error_message
+  - toggle_bool
+  - redundant_nil_coalescing
+  - discouraged_optional_boolean
+
+analyzer_rules:
+  - unused_import
+
+
+line_length:
+  warning: 140
+  error: 180
+  ignores_comments: true
+  ignores_urls: true
+
+type_body_length:
+  warning: 300
+  error: 500
+
+function_body_length:
+  warning: 40
+  error: 80
+  ignore_comments: true
+  ignore_empty_functions: true
+

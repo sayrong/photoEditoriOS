@@ -1,0 +1,17 @@
+/* 
+  Localizable.strings
+  PhotoEditorTestTask
+
+  Created by DmitrySK on 18.04.2025.
+  
+*/
+"Sign in" = "Авторизация";
+"Welcome Message" = "Для персонализированного опыта, пожалуйста, войдите в свою учетную запись.";
+"Sign in with Google" = "Войти с Google";
+"Log in" = "Войти";
+"Or" = "Или";
+"Forget Password?" = "Забыли пароль?";
+"Don't have account?" = "У вас нет аккаунта?";
+"Sign up" = "Регистрация";
+"Email" = "Электронная почта";
+"Password" = "Пароль";

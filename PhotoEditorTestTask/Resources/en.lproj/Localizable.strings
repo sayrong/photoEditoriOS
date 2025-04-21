@@ -1,0 +1,17 @@
+/* 
+  Localizable.strings
+  PhotoEditorTestTask
+
+  Created by DmitrySK on 18.04.2025.
+  
+*/
+"Sign in" = "Sign in";
+"Welcome Message" = "For a personalized experience please sign into your account";
+"Sign in with Google" = "Sign in with Google";
+"Log in" = "Log in";
+"Or" = "Or";
+"Forget Password?" = "Forget Password?";
+"Don't have account?" = "Don't have account?";
+"Sign up" = "Sign up";
+"Email" = "Email";
+"Password" = "Password";
