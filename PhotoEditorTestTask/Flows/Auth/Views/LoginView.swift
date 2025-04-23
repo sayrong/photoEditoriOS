@@ -9,8 +9,11 @@ import SwiftUI
 
 struct LoginView: View {
     
-    @State private var email: String = ""
-    @State private var password: String = ""
+    @ObservedObject private var viewModel: LoginViewModel
+    
+    init(viewModel: LoginViewModel) {
+        self.viewModel = viewModel
+    }
     
     var body: some View {
         VStack {
@@ -18,11 +21,11 @@ struct LoginView: View {
             header
             singInWith
             orDivider
-            credentialsForm($email, $password)
+            credentialsForm($viewModel.email, $viewModel.password)
             Spacer()
         }
         .padding()
-        //Limit size to adapt to iPad
+        // Limit size to adapt to iPad
         .frame(maxWidth: 400, maxHeight: 800, alignment: .center)
     }
     
@@ -40,7 +43,7 @@ struct LoginView: View {
     
     private var singInWith: some View {
         Button {
-            
+            viewModel.signInWithGoogle()
         } label: {
             HStack(spacing: 8) {
                 Asset.Images.iconGoogle.swiftUIImage
@@ -75,14 +78,30 @@ struct LoginView: View {
     
     private func credentialsForm(_ email: Binding<String>, _ pwd: Binding<String>) -> some View {
         VStack {
-            TextField(L10n.email, text: $email)
+            TextField(L10n.email, text: email)
+                .autocorrectionDisabled(true)
+                .textInputAutocapitalization(.never)
+                .keyboardType(.emailAddress)
                 .textFieldStyle(.roundedBorder)
-            TextField(L10n.password, text: $password)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(viewModel.isEmailFieldCorrect ? Color.clear : Asset.Colors.destructive.swiftUIColor, lineWidth: 1)
+                )
+            SecureField(L10n.password, text: pwd)
                 .textFieldStyle(.roundedBorder)
+                .onSubmit {
+                    viewModel.logInDidTap()
+                }
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(viewModel.isPasswordFieldCorrect ? Color.clear : Asset.Colors.destructive.swiftUIColor, lineWidth: 1)
+                )
+            
             HStack {
                 Spacer()
                 forgetPasswordAction
             }.padding()
+            
             logInButton
             dontHaveAccountBlock
                 .padding()
@@ -91,7 +110,7 @@ struct LoginView: View {
     
     private var forgetPasswordAction: some View {
         Button {
-            
+            viewModel.forgotPwdDidTap()
         } label: {
             Text(L10n.forgetPassword)
                 .captionText()
@@ -100,11 +119,13 @@ struct LoginView: View {
     
     private var logInButton: some View {
         Button {
-            
+            viewModel.logInDidTap()
         } label: {
             Text(L10n.logIn)
         }
         .primaryButtonStyle()
+        .disabled(!viewModel.canSubmitForm)
+        .opacity(!viewModel.canSubmitForm ? 0.5 : 1.0)
     }
     
     private var dontHaveAccountBlock: some View {
@@ -112,7 +133,7 @@ struct LoginView: View {
             Text(L10n.donTHaveAccount)
                 .captionText()
             Button {
-                
+                viewModel.registrationDidTap()
             } label: {
                 Text(L10n.signUp)
                     .accentText()
@@ -122,5 +143,5 @@ struct LoginView: View {
 }
 
 #Preview {
-    LoginView()
+    LoginView(viewModel: .preview)
 }

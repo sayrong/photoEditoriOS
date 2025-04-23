@@ -20,9 +20,11 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 struct PhotoEditorTestTaskApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     
+    @StateObject private var appCoordinator = AppCoordinator()
+    
     var body: some Scene {
         WindowGroup {
-            LoginView()
+            appCoordinator.rootView
         }
     }
 }
