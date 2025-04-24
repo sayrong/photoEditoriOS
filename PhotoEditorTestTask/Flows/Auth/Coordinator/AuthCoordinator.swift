@@ -39,12 +39,16 @@ final class AuthCoordinator: ObservableObject {
         case .forgotPassword:
             Text("Forgot")
         case .register:
-            Text("Register")
+            registerView()
         }
     }
 
     private func loginView() -> some View {
         moduleFactory.makeLoginModule(delegate: self)
+    }
+    
+    private func registerView() -> some View {
+        moduleFactory.makeRegisterModule()
     }
     
     // MARK: Navigation
@@ -57,7 +61,7 @@ final class AuthCoordinator: ObservableObject {
     }
 }
 
-extension AuthCoordinator: LoginModuleDelegate {
+extension AuthCoordinator: LoginCoordinatorDelegate {
     func loginDidComplete() {
         navigateTo(destination: .login)
     }

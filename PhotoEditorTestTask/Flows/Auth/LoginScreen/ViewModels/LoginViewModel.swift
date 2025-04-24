@@ -6,14 +6,13 @@
 //
 import Combine
 
-protocol LoginModuleDelegate: AnyObject {
+protocol LoginCoordinatorDelegate: AnyObject {
     func loginDidComplete()
     func forgotPasswordRequested()
     func registrationRequested()
 }
 
-
-class LoginViewModel: ObservableObject {
+final class LoginViewModel: ObservableObject {
     
     @Published var email: String = ""
     @Published var password: String = ""
@@ -30,10 +29,10 @@ class LoginViewModel: ObservableObject {
         password.isEmpty || validator.isValidPassword(password)
     }
     
-    private weak var delegate: LoginModuleDelegate?
+    private weak var delegate: LoginCoordinatorDelegate?
     private var validator: IUserCredentialsValidator
     
-    init(delegate: LoginModuleDelegate?, validator: IUserCredentialsValidator) {
+    init(delegate: LoginCoordinatorDelegate?, validator: IUserCredentialsValidator) {
         self.delegate = delegate
         self.validator = validator
     }
@@ -62,4 +61,3 @@ extension LoginViewModel {
     }
 }
 #endif
-

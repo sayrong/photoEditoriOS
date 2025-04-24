@@ -77,7 +77,7 @@ struct LoginView: View {
     }
     
     private func credentialsForm(_ email: Binding<String>, _ pwd: Binding<String>) -> some View {
-        VStack {
+        VStack(spacing: 20) {
             TextField(L10n.email, text: email)
                 .autocorrectionDisabled(true)
                 .textInputAutocapitalization(.never)
@@ -100,11 +100,10 @@ struct LoginView: View {
             HStack {
                 Spacer()
                 forgetPasswordAction
-            }.padding()
+            }
             
             logInButton
             dontHaveAccountBlock
-                .padding()
         }
     }
     

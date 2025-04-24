@@ -22,6 +22,6 @@ struct UserCredentialsValidator: IUserCredentialsValidator {
     }
     
     func isValidPassword(_ password: String) -> Bool {
-        return password.count >= 8
+        return password.count >= 6
     }
 }
