@@ -20,6 +20,13 @@ struct AuthCoordinatorView: View {
                 .sheet(item: $coordinator.presentedSheet) { route in
                     coordinator.view(for: route)
                 }
+                .alert(item: $coordinator.alertMessage) { alert in
+                    Alert(
+                        title: Text(alert.title),
+                        message: Text(alert.message),
+                        dismissButton: .default(Text("OK"))
+                    )
+                }
         }
     }
 }

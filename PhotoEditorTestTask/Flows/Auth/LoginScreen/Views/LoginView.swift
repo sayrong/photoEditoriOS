@@ -27,6 +27,7 @@ struct LoginView: View {
         .padding()
         // Limit size to adapt to iPad
         .frame(maxWidth: 400, maxHeight: 800, alignment: .center)
+        .loadingOverlay(viewModel.isLoadingState)
     }
     
     private var header: some View {
@@ -142,5 +143,5 @@ struct LoginView: View {
 }
 
 #Preview {
-    LoginView(viewModel: .preview)
+    LoginView(viewModel: .preview())
 }

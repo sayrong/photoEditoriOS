@@ -8,6 +8,11 @@
 import Combine
 import Foundation
 
+protocol RegistrationCoordinatorDelegate: AnyObject {
+    func registerDidComplete()
+    func registrationDidFail(with error: String)
+}
+
 final class RegistrationViewModel: ObservableObject {
     
     @Published var email: String = ""
@@ -19,6 +24,7 @@ final class RegistrationViewModel: ObservableObject {
     @Published var confirmPasswordValidationError: String?
     
     @Published var isEmailChecking: Bool = false
+    @Published var isLoadingState: Bool = false
     
     private var cancellables = Set<AnyCancellable>()
     
@@ -29,10 +35,12 @@ final class RegistrationViewModel: ObservableObject {
             && emailValidationError == nil
     }
     
+    private weak var delegate: RegistrationCoordinatorDelegate?
     private var validator: IUserCredentialsValidator
     private var authService: IAuthService
     
-    init(validator: IUserCredentialsValidator, authService: IAuthService) {
+    init(delegate: RegistrationCoordinatorDelegate, validator: IUserCredentialsValidator, authService: IAuthService) {
+        self.delegate = delegate
         self.validator = validator
         self.authService = authService
         emailValidationSetup()
@@ -40,6 +48,27 @@ final class RegistrationViewModel: ObservableObject {
         confirmPasswordValidationSetup()
     }
     
+    func registerUser() {
+        isLoadingState = true
+        
+        Task { [weak self] in
+            guard let self else { return }
+            
+            let result = await authService.register(email, password)
+            
+            await MainActor.run {
+                self.isLoadingState = false
+                switch result {
+                case .success:
+                    self.delegate?.registerDidComplete()
+                case .failure(let authError):
+                    self.delegate?.registrationDidFail(with: authError.userMessage)
+                }
+            }
+        }
+    }
+    
+    // MARK: Fields Validation
     private func emailValidationSetup() {
         $email
             .debounce(for: 0.5, scheduler: RunLoop.main)

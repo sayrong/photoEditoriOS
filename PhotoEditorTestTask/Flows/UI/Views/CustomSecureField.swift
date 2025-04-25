@@ -45,10 +45,10 @@ struct CustomSecureFieldWithError: View {
         VStack(alignment: .leading) {
             CustomSecureField(title: title, text: $text, isValid: error == nil)
             
-            Text(error ?? "" )
+            Text(error ?? "Error" )
                 .accentText()
                 .padding(.leading)
-                .fixedSize(horizontal: false, vertical: true)
+                .opacity(error == nil ? 0 : 1)
         }
     }
 }

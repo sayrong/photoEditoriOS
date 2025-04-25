@@ -30,15 +30,21 @@ struct CustomTextFieldWithError: View {
     let title: String
     @Binding var text: String
     var error: String?
+    @Binding var isValidating: Bool
     
     var body: some View {
         VStack(alignment: .leading) {
             CustomTextField(title: title, text: $text, isValid: error == nil)
+                .overlay(alignment: .trailing) {
+                    ProgressView()
+                        .padding(.trailing, 8)
+                        .opacity(isValidating ? 1 : 0)
+                }
             
-            Text(error ?? "" )
+            Text(error ?? "Error" )
                 .accentText()
                 .padding(.leading)
-                .fixedSize(horizontal: false, vertical: true)
+                .opacity(error == nil ? 0 : 1)
         }
     }
 }

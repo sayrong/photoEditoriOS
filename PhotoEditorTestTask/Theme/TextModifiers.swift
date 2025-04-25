@@ -42,7 +42,7 @@ struct CaptionTextModifier: ViewModifier {
 struct AccentTextModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .font(.system(size: 14, weight: .regular))
+            .font(.system(size: 12, weight: .regular))
             .foregroundColor(Asset.Colors.accentColor.swiftUIColor)
     }
 }

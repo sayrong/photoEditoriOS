@@ -7,6 +7,12 @@
 
 import SwiftUI
 
+struct AlertMessage: Identifiable {
+    let id = UUID()
+    let title: String
+    let message: String
+}
+
 final class AuthCoordinator: ObservableObject {
     
     enum Route: Identifiable {
@@ -19,6 +25,7 @@ final class AuthCoordinator: ObservableObject {
     
     @Published var path: [Route] = []
     @Published var presentedSheet: Route?
+    @Published var alertMessage: AlertMessage?
     
     private var moduleFactory: IAuthModuleFactory
     private var onFinish: (() -> Void)?
@@ -48,7 +55,7 @@ final class AuthCoordinator: ObservableObject {
     }
     
     private func registerView() -> some View {
-        moduleFactory.makeRegisterModule()
+        moduleFactory.makeRegisterModule(delegate: self)
     }
     
     // MARK: Navigation
@@ -59,11 +66,16 @@ final class AuthCoordinator: ObservableObject {
     private func navigateBack() {
         path.removeLast()
     }
+    
+    // MARK: Alert
+    private func showError(_ message: String) {
+        alertMessage = AlertMessage(title: "Ошибка", message: message)
+    }
 }
 
 extension AuthCoordinator: LoginCoordinatorDelegate {
     func loginDidComplete() {
-        navigateTo(destination: .login)
+        onFinish?()
     }
     
     func forgotPasswordRequested() {
@@ -72,5 +84,20 @@ extension AuthCoordinator: LoginCoordinatorDelegate {
     
     func registrationRequested() {
         navigateTo(destination: .register)
+    }
+    
+    func loginDidFail(with error: String) {
+        showError(error)
+    }
+}
+
+extension AuthCoordinator: RegistrationCoordinatorDelegate {
+    
+    func registerDidComplete() {
+        onFinish?()
+    }
+    
+    func registrationDidFail(with error: String) {
+        showError(error)
     }
 }

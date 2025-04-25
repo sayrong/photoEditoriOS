@@ -7,14 +7,39 @@
 
 import FirebaseAuth
 
+enum AuthError: Error {
+    case invalidCredentials
+    case emailAlreadyInUse
+    case weakPassword
+    case networkError
+    case unknownError(message: String)
+    
+    var userMessage: String {
+        switch self {
+        case .invalidCredentials:
+            return "Неверный email или пароль"
+        case .emailAlreadyInUse:
+            return "Этот email уже зарегистрирован"
+        case .weakPassword:
+            return "Пароль слишком простой. Используйте не менее 6 символов"
+        case .networkError:
+            return "Проверьте подключение к интернету"
+        case .unknownError(let message):
+            return "Произошла ошибка: \(message)"
+        }
+    }
+}
+
 protocol IAuthService {
-    func isEmailValidForRegistration(_ email: String) async -> Result<Bool, Error>
+    func isEmailValidForRegistration(_ email: String) async -> Result<Bool, AuthError>
+    func register(_ email: String, _ password: String) async -> Result<User, AuthError>
+    func login(_ email: String, _ password: String) async -> Result<User, AuthError>
 }
 
 final class FirebaseAuthService: IAuthService {
     
     // Soon deprecated
-    func isEmailValidForRegistration(_ email: String) async -> Result<Bool, Error> {
+    func isEmailValidForRegistration(_ email: String) async -> Result<Bool, AuthError> {
         do {
             let methods = try await Auth.auth().fetchSignInMethods(forEmail: email)
             let isValid = methods.isEmpty
@@ -22,7 +47,48 @@ final class FirebaseAuthService: IAuthService {
         } catch {
             print(error.localizedDescription)
             // In case of error we block registration process
-            return .failure(error)
+            return .failure(mapErrorToAuthError(error))
+        }
+    }
+    
+    func register(_ email: String, _ password: String) async -> Result<User, AuthError> {
+        do {
+            let authData = try await Auth.auth().createUser(withEmail: email, password: password)
+            let user = User(id: authData.user.uid, email: authData.user.email ?? "")
+            return .success(user)
+        } catch {
+            print(error.localizedDescription)
+            return .failure(mapErrorToAuthError(error))
+        }
+    }
+    
+    func login(_ email: String, _ password: String) async -> Result<User, AuthError> {
+        do {
+            let authData = try await Auth.auth().signIn(withEmail: email, password: password)
+            let user = User(id: authData.user.uid, email: authData.user.email ?? "")
+            return .success(user)
+        } catch {
+            print(error.localizedDescription)
+            return .failure(mapErrorToAuthError(error))
+        }
+    }
+    
+    private func mapErrorToAuthError(_ error: any Error) -> AuthError {
+        let error = error as NSError
+        guard error.domain == AuthErrors.domain else {
+            return AuthError.unknownError(message: error.localizedDescription)
+        }
+        switch error.code {
+        case AuthErrorCode.invalidEmail.rawValue, AuthErrorCode.wrongPassword.rawValue:
+            return AuthError.invalidCredentials
+        case AuthErrorCode.emailAlreadyInUse.rawValue:
+            return AuthError.emailAlreadyInUse
+        case AuthErrorCode.weakPassword.rawValue:
+            return AuthError.weakPassword
+        case AuthErrorCode.networkError.rawValue:
+            return AuthError.networkError
+        default:
+            return AuthError.unknownError(message: error.localizedDescription)
         }
     }
 }

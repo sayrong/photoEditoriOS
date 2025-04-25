@@ -10,12 +10,14 @@ protocol LoginCoordinatorDelegate: AnyObject {
     func loginDidComplete()
     func forgotPasswordRequested()
     func registrationRequested()
+    func loginDidFail(with error: String)
 }
 
 final class LoginViewModel: ObservableObject {
     
     @Published var email: String = ""
     @Published var password: String = ""
+    @Published var isLoadingState: Bool = false
     
     var canSubmitForm: Bool {
         validator.isValidEmail(email) && validator.isValidPassword(password)
@@ -31,18 +33,36 @@ final class LoginViewModel: ObservableObject {
     
     private weak var delegate: LoginCoordinatorDelegate?
     private var validator: IUserCredentialsValidator
+    private var authService: IAuthService
     
-    init(delegate: LoginCoordinatorDelegate?, validator: IUserCredentialsValidator) {
+    init(delegate: LoginCoordinatorDelegate?, validator: IUserCredentialsValidator, authService: IAuthService) {
         self.delegate = delegate
         self.validator = validator
+        self.authService = authService
     }
     
     func signInWithGoogle() {
         
     }
-    
+
     func logInDidTap() {
-        delegate?.loginDidComplete()
+        isLoadingState = true
+        
+        Task { [weak self] in
+            guard let self else { return }
+            
+            let result = await authService.login(email, password)
+            
+            await MainActor.run {
+                self.isLoadingState = false
+                switch result {
+                case .success:
+                    self.delegate?.loginDidComplete()
+                case .failure(let authError):
+                    self.delegate?.loginDidFail(with: authError.userMessage)
+                }
+            }
+        }
     }
     
     func forgotPwdDidTap() {
@@ -53,11 +73,3 @@ final class LoginViewModel: ObservableObject {
         delegate?.registrationRequested()
     }
 }
-
-#if DEBUG
-extension LoginViewModel {
-    static var preview: LoginViewModel {
-        LoginViewModel(delegate: nil, validator: UserCredentialsValidator())
-    }
-}
-#endif

@@ -7,7 +7,7 @@
 
 protocol IAuthModuleFactory {
     func makeLoginModule(delegate: LoginCoordinatorDelegate) -> LoginView
-    func makeRegisterModule() -> RegistrationView
+    func makeRegisterModule(delegate: RegistrationCoordinatorDelegate) -> RegistrationView
 }
 
 class AuthModuleFactory: IAuthModuleFactory {
@@ -19,14 +19,16 @@ class AuthModuleFactory: IAuthModuleFactory {
     }
     
     func makeLoginModule(delegate: LoginCoordinatorDelegate) -> LoginView {
-        let viewModel = LoginViewModel(delegate: delegate, validator: UserCredentialsValidator())
+        let viewModel = LoginViewModel(delegate: delegate,
+                                       validator: UserCredentialsValidator(),
+                                       authService: container.authService() )
         return LoginView(viewModel: viewModel)
     }
     
-    func makeRegisterModule() -> RegistrationView {
-        let authService = FirebaseAuthService()
-        let viewModel = RegistrationViewModel(validator: UserCredentialsValidator(),
-                                              authService: authService)
+    func makeRegisterModule(delegate: RegistrationCoordinatorDelegate) -> RegistrationView {
+        let viewModel = RegistrationViewModel(delegate: delegate,
+                                              validator: UserCredentialsValidator(),
+                                              authService: container.authService())
         return RegistrationView(viewModel: viewModel)
     }
 }

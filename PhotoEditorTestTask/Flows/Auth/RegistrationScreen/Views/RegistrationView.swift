@@ -24,6 +24,7 @@ struct RegistrationView: View {
             Spacer()
         }
         .padding()
+        .loadingOverlay(viewModel.isLoadingState)
     }
     
     private func header() -> some View {
@@ -36,12 +37,8 @@ struct RegistrationView: View {
         VStack(spacing: 10) {
             CustomTextFieldWithError(title: L10n.email,
                                      text: $viewModel.email,
-                                     error: viewModel.emailValidationError)
-                .overlay(alignment: .trailing) {
-                    ProgressView()
-                        .padding(.trailing, 8)
-                        .opacity(viewModel.isEmailChecking ? 1 : 0)
-                }
+                                     error: viewModel.emailValidationError,
+                                     isValidating: $viewModel.isEmailChecking)
             
             CustomSecureFieldWithError(title: L10n.password,
                                        text: $viewModel.password,
@@ -57,7 +54,7 @@ struct RegistrationView: View {
     
     private func registerButton() -> some View {
         Button {
-            
+            viewModel.registerUser()
         } label: {
             Text(L10n.register)
         }
@@ -68,5 +65,5 @@ struct RegistrationView: View {
 }
 
 #Preview {
-    RegistrationView(viewModel: .init(validator: UserCredentialsValidator(), authService: FirebaseAuthService()))
+    RegistrationView(viewModel: .preview())
 }
