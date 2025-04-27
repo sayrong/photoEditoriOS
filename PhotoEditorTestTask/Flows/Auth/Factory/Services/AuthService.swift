@@ -34,6 +34,7 @@ protocol IAuthService {
     func isEmailValidForRegistration(_ email: String) async -> Result<Bool, AuthError>
     func register(_ email: String, _ password: String) async -> Result<User, AuthError>
     func login(_ email: String, _ password: String) async -> Result<User, AuthError>
+    func sendPasswordReset(withEmail email: String) async -> Result<Void, AuthError>
 }
 
 final class FirebaseAuthService: IAuthService {
@@ -67,6 +68,16 @@ final class FirebaseAuthService: IAuthService {
             let authData = try await Auth.auth().signIn(withEmail: email, password: password)
             let user = User(id: authData.user.uid, email: authData.user.email ?? "")
             return .success(user)
+        } catch {
+            print(error.localizedDescription)
+            return .failure(mapErrorToAuthError(error))
+        }
+    }
+    
+    func sendPasswordReset(withEmail email: String) async -> Result<Void, AuthError> {
+        do {
+            try await Auth.auth().sendPasswordReset(withEmail: email)
+            return .success(())
         } catch {
             print(error.localizedDescription)
             return .failure(mapErrorToAuthError(error))

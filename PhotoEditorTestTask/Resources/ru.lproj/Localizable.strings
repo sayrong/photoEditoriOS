@@ -34,3 +34,5 @@
 "Server error" = "Ошибка сервера";
 "Incorrect password" = "Некорректный пароль";
 "Passwords don't match" = "Пароли не совпадают";
+"OK" = "OK";
+"Password reset have been sent" = "Инструкции по сбросу пароля были отправлены на вашу электронную почту";

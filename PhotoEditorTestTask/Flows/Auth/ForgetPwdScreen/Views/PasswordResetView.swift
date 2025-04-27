@@ -21,8 +21,8 @@ struct PasswordResetView: View {
             headerSection()
             EmailTextFieldWithError(title: L10n.email,
                                     text: $viewModel.email,
-                                    error: "Error",
-                                    isValidating: .constant(true))
+                                    error: viewModel.emailValidationMessage,
+                                    isValidating: .constant(false))
             resetButton()
             cancelButton()
             Spacer()
@@ -54,16 +54,18 @@ struct PasswordResetView: View {
     
     private func resetButton() -> some View {
         Button {
-            
+            viewModel.resetPassword()
         } label: {
             Text(L10n.sendResetInstructions)
         }
         .primaryButtonStyle()
+        .disabled(!viewModel.canSubmit)
+        .opacity(!viewModel.canSubmit ? 0.5 : 1.0)
     }
     
     private func cancelButton() -> some View {
         Button {
-            
+            viewModel.cancel()
         } label: {
             Text(L10n.cancel)
         }

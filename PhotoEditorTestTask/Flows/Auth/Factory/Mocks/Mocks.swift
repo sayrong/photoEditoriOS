@@ -17,6 +17,12 @@ final class MockLoginCoordinatorDelegate: LoginCoordinatorDelegate {
     func registrationRequested() {}
 }
 
+final class MockPasswordResetCoordinatorDelegate: PasswordResetCoordinatorDelegate {
+    func passwordResetDidCancel() {}
+    func passwordResetDidComplete(with message: AlertMessage) {}
+    func passwordResetDidFail(with message: AlertMessage) {}
+}
+
 final class MockValidator: IUserCredentialsValidator {
     func isValidEmail(_ email: String) -> Bool {
         return false
@@ -28,6 +34,10 @@ final class MockValidator: IUserCredentialsValidator {
 }
 
 final class MockAuthService: IAuthService {
+    func sendPasswordReset(withEmail email: String) async -> Result<Void, AuthError> {
+        return .success(())
+    }
+    
     func login(_ email: String, _ password: String) async -> Result<User, AuthError> {
         return .success(User(id: "124", email: "vv@qq.com"))
     }
@@ -59,7 +69,8 @@ extension LoginViewModel {
 
 extension PasswordResetViewModel {
     static func preview() -> PasswordResetViewModel {
-        PasswordResetViewModel(delegate: MockRegistrationCoordinatorDelegate(),
-                               validator: MockValidator())
+        PasswordResetViewModel(delegate: MockPasswordResetCoordinatorDelegate(),
+                               validator: MockValidator(),
+                               authService: MockAuthService())
     }
 }

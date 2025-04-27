@@ -8,6 +8,7 @@
 protocol IAuthModuleFactory {
     func makeLoginModule(delegate: LoginCoordinatorDelegate) -> LoginView
     func makeRegisterModule(delegate: RegistrationCoordinatorDelegate) -> RegistrationView
+    func makePasswordResetModule(delegate: PasswordResetCoordinatorDelegate) -> PasswordResetView
 }
 
 class AuthModuleFactory: IAuthModuleFactory {
@@ -30,5 +31,12 @@ class AuthModuleFactory: IAuthModuleFactory {
                                               validator: UserCredentialsValidator(),
                                               authService: container.authService())
         return RegistrationView(viewModel: viewModel)
+    }
+    
+    func makePasswordResetModule(delegate: PasswordResetCoordinatorDelegate) -> PasswordResetView {
+        let viewModel = PasswordResetViewModel(delegate: delegate,
+                                              validator: UserCredentialsValidator(),
+                                              authService: container.authService())
+        return PasswordResetView(viewModel: viewModel)
     }
 }

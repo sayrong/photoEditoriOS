@@ -34,3 +34,5 @@
 "Server error" = "Server error";
 "Incorrect password" = "Incorrect password";
 "Passwords don't match" = "Passwords don't match";
+"OK" = "OK";
+"Password reset have been sent" = "Password reset instructions have been sent to your email";

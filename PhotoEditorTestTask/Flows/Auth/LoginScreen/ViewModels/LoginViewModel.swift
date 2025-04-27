@@ -24,11 +24,11 @@ final class LoginViewModel: ObservableObject {
     }
     
     var isEmailFieldCorrect: Bool {
-        email.isEmpty || validator.isValidEmail(email)
+        validator.isValidEmail(email)
     }
     
     var isPasswordFieldCorrect: Bool {
-        password.isEmpty || validator.isValidPassword(password)
+        validator.isValidPassword(password)
     }
     
     private weak var delegate: LoginCoordinatorDelegate?

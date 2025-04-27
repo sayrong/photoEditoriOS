@@ -44,7 +44,7 @@ final class AuthCoordinator: ObservableObject {
         case .login:
             loginView()
         case .forgotPassword:
-            Text("Forgot")
+            passwordResetView()
         case .register:
             registerView()
         }
@@ -58,6 +58,10 @@ final class AuthCoordinator: ObservableObject {
         moduleFactory.makeRegisterModule(delegate: self)
     }
     
+    private func passwordResetView() -> some View {
+        moduleFactory.makePasswordResetModule(delegate: self)
+    }
+    
     // MARK: Navigation
     private func navigateTo(destination: Route) {
         path.append(destination)
@@ -68,7 +72,7 @@ final class AuthCoordinator: ObservableObject {
     }
     
     // MARK: Alert
-    private func showError(_ message: AlertMessage) {
+    private func showAlert(_ message: AlertMessage) {
         alertMessage = message
     }
 }
@@ -87,7 +91,7 @@ extension AuthCoordinator: LoginCoordinatorDelegate {
     }
     
     func loginDidFail(with message: AlertMessage) {
-        showError(message)
+        showAlert(message)
     }
 }
 
@@ -98,6 +102,21 @@ extension AuthCoordinator: RegistrationCoordinatorDelegate {
     }
     
     func registrationDidFail(with message: AlertMessage) {
-        showError(message)
+        showAlert(message)
+    }
+}
+
+extension AuthCoordinator: PasswordResetCoordinatorDelegate {
+    func passwordResetDidComplete(with message: AlertMessage) {
+        presentedSheet = nil
+        showAlert(message)
+    }
+    
+    func passwordResetDidFail(with message: AlertMessage) {
+        showAlert(message)
+    }
+    
+    func passwordResetDidCancel() {
+        presentedSheet = nil
     }
 }
