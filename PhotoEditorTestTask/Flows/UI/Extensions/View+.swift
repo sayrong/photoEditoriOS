@@ -10,8 +10,8 @@ import SwiftUI
 extension View {
     func errorBorder(isValid: Bool) -> some View {
         self.overlay(
-            RoundedRectangle(cornerRadius: 6)
-                .stroke(isValid ? Color.clear : Asset.Colors.destructive.swiftUIColor, lineWidth: 1)
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(isValid ? Color(hex: 0xDEE2E6) : Asset.Colors.destructive.swiftUIColor, lineWidth: 1)
         )
     }
 }

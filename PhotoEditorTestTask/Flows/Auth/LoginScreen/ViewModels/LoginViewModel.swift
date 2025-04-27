@@ -10,7 +10,7 @@ protocol LoginCoordinatorDelegate: AnyObject {
     func loginDidComplete()
     func forgotPasswordRequested()
     func registrationRequested()
-    func loginDidFail(with error: String)
+    func loginDidFail(with message: AlertMessage)
 }
 
 final class LoginViewModel: ObservableObject {
@@ -59,7 +59,8 @@ final class LoginViewModel: ObservableObject {
                 case .success:
                     self.delegate?.loginDidComplete()
                 case .failure(let authError):
-                    self.delegate?.loginDidFail(with: authError.userMessage)
+                    let error = AlertMessage(title: L10n.error, message: authError.userMessage)
+                    self.delegate?.loginDidFail(with: error)
                 }
             }
         }

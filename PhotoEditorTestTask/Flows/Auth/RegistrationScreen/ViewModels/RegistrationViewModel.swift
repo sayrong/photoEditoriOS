@@ -10,7 +10,7 @@ import Foundation
 
 protocol RegistrationCoordinatorDelegate: AnyObject {
     func registerDidComplete()
-    func registrationDidFail(with error: String)
+    func registrationDidFail(with message: AlertMessage)
 }
 
 final class RegistrationViewModel: ObservableObject {
@@ -62,7 +62,8 @@ final class RegistrationViewModel: ObservableObject {
                 case .success:
                     self.delegate?.registerDidComplete()
                 case .failure(let authError):
-                    self.delegate?.registrationDidFail(with: authError.userMessage)
+                    let error = AlertMessage(title: L10n.error, message: authError.userMessage)
+                    self.delegate?.registrationDidFail(with: error)
                 }
             }
         }
@@ -82,7 +83,7 @@ final class RegistrationViewModel: ObservableObject {
                 }
                 
                 guard self.validator.isValidEmail(email) else {
-                    self.emailValidationError = "Некорректный email"
+                    self.emailValidationError = L10n.incorrectEmail
                     return
                 }
                 self.emailValidationError = nil
@@ -95,12 +96,12 @@ final class RegistrationViewModel: ObservableObject {
                     case .success(let isValid):
                         if !isValid {
                             await MainActor.run {
-                                self.emailValidationError = "Email уже занят"
+                                self.emailValidationError = L10n.emailSAlreadyTaken
                             }
                         }
                     case .failure:
                         await MainActor.run {
-                            self.emailValidationError = "Ошибка сервера"
+                            self.emailValidationError = L10n.serverError
                         }
                     }
                 }
@@ -121,7 +122,7 @@ final class RegistrationViewModel: ObservableObject {
                 }
                 
                 guard self.validator.isValidPassword(password) else {
-                    self.passwordValidationError = "Некорректный пароль"
+                    self.passwordValidationError = L10n.incorrectPassword
                     return
                 }
                 self.passwordValidationError = nil
@@ -142,11 +143,11 @@ final class RegistrationViewModel: ObservableObject {
                 }
                 
                 guard self.validator.isValidPassword(password) else {
-                    self.confirmPasswordValidationError = "Некорректный пароль"
+                    self.confirmPasswordValidationError = L10n.incorrectPassword
                     return
                 }
                 guard password == self.password else {
-                    self.confirmPasswordValidationError = "Пароли не совпадают"
+                    self.confirmPasswordValidationError = L10n.passwordsDonTMatch
                     return
                 }
                 

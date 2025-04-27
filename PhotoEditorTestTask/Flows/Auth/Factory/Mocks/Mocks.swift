@@ -7,11 +7,11 @@
 
 final class MockRegistrationCoordinatorDelegate: RegistrationCoordinatorDelegate {
     func registerDidComplete() {}
-    func registrationDidFail(with error: String) {}
+    func registrationDidFail(with message: AlertMessage) {}
 }
 
 final class MockLoginCoordinatorDelegate: LoginCoordinatorDelegate {
-    func loginDidFail(with error: String) {}
+    func loginDidFail(with message: AlertMessage) {}
     func loginDidComplete() {}
     func forgotPasswordRequested() {}
     func registrationRequested() {}
@@ -54,5 +54,12 @@ extension LoginViewModel {
         LoginViewModel(delegate: MockLoginCoordinatorDelegate(),
                        validator: MockValidator(),
                        authService: MockAuthService())
+    }
+}
+
+extension PasswordResetViewModel {
+    static func preview() -> PasswordResetViewModel {
+        PasswordResetViewModel(delegate: MockRegistrationCoordinatorDelegate(),
+                               validator: MockValidator())
     }
 }

@@ -26,8 +26,16 @@ struct BodyTextModifier: ViewModifier {
 struct ButtonTextModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .font(.system(size: 24, weight: .regular))
+            .font(.system(size: 18, weight: .semibold))
             .foregroundColor(Asset.Colors.primaryButtonText.swiftUIColor)
+    }
+}
+
+struct CancelButtonTextModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .font(.system(size: 18, weight: .semibold))
+            .foregroundColor(Asset.Colors.primaryButton.swiftUIColor)
     }
 }
 
@@ -42,7 +50,7 @@ struct CaptionTextModifier: ViewModifier {
 struct AccentTextModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .font(.system(size: 12, weight: .regular))
+            .font(.system(size: 14, weight: .regular))
             .foregroundColor(Asset.Colors.accentColor.swiftUIColor)
     }
 }
@@ -66,5 +74,9 @@ extension View {
     
     func buttonText() -> some View {
         self.modifier(ButtonTextModifier())
+    }
+    
+    func cancelButtonText() -> some View {
+        self.modifier(CancelButtonTextModifier())
     }
 }

@@ -17,15 +17,15 @@ enum AuthError: Error {
     var userMessage: String {
         switch self {
         case .invalidCredentials:
-            return "Неверный email или пароль"
+            return L10n.invalidEmailOrPassword
         case .emailAlreadyInUse:
-            return "Этот email уже зарегистрирован"
+            return L10n.thisEmailIsAlreadyRegistered
         case .weakPassword:
-            return "Пароль слишком простой. Используйте не менее 6 символов"
+            return L10n.thePasswordIsTooSimple
         case .networkError:
-            return "Проверьте подключение к интернету"
+            return L10n.checkYourInternetConnection
         case .unknownError(let message):
-            return "Произошла ошибка: \(message)"
+            return L10n.errorOccurred(message)
         }
     }
 }

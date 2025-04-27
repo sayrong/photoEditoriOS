@@ -25,9 +25,9 @@ struct LoginView: View {
             Spacer()
         }
         .padding()
-        // Limit size to adapt to iPad
-        .frame(maxWidth: 400, maxHeight: 800, alignment: .center)
+        .background(Asset.Colors.background.swiftUIColor)
         .loadingOverlay(viewModel.isLoadingState)
+        .adaptiveFrame()
     }
     
     private var header: some View {
@@ -79,25 +79,12 @@ struct LoginView: View {
     
     private func credentialsForm(_ email: Binding<String>, _ pwd: Binding<String>) -> some View {
         VStack(spacing: 20) {
-            TextField(L10n.email, text: email)
-                .autocorrectionDisabled(true)
-                .textInputAutocapitalization(.never)
-                .keyboardType(.emailAddress)
-                .textFieldStyle(.roundedBorder)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 6)
-                        .stroke(viewModel.isEmailFieldCorrect ? Color.clear : Asset.Colors.destructive.swiftUIColor, lineWidth: 1)
-                )
-            SecureField(L10n.password, text: pwd)
-                .textFieldStyle(.roundedBorder)
-                .onSubmit {
-                    viewModel.logInDidTap()
-                }
-                .overlay(
-                    RoundedRectangle(cornerRadius: 6)
-                        .stroke(viewModel.isPasswordFieldCorrect ? Color.clear : Asset.Colors.destructive.swiftUIColor, lineWidth: 1)
-                )
-            
+            EmailTextField(title: L10n.email,
+                           text: email,
+                           isValid: viewModel.isEmailFieldCorrect)
+            CustomSecureField(title: L10n.password,
+                              text: pwd,
+                              isValid: viewModel.isPasswordFieldCorrect)
             HStack {
                 Spacer()
                 forgetPasswordAction

@@ -24,21 +24,37 @@ struct RegistrationView: View {
             Spacer()
         }
         .padding()
+        .background(Asset.Colors.background.swiftUIColor)
         .loadingOverlay(viewModel.isLoadingState)
+        .adaptiveFrame()
     }
     
     private func header() -> some View {
-        Text(L10n.createAccount)
-            .titleText()
-            .padding(.vertical)
+        VStack(spacing: 16) {
+            Image(systemName: "person.crop.circle.badge.plus")
+                .font(.system(size: 60))
+                .foregroundColor(Asset.Colors.secondaryAccent.swiftUIColor)
+                .padding(.bottom, 8)
+            
+            Text(L10n.createAccount)
+                .titleText()
+                .font(.largeTitle)
+                .fontWeight(.bold)
+                .multilineTextAlignment(.center)
+            
+            Text(L10n.fillDetailsToCreateANewAccount)
+                .font(.body)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+        }
     }
     
     private func registrationFields() -> some View {
         VStack(spacing: 10) {
-            CustomTextFieldWithError(title: L10n.email,
-                                     text: $viewModel.email,
-                                     error: viewModel.emailValidationError,
-                                     isValidating: $viewModel.isEmailChecking)
+            EmailTextFieldWithError(title: L10n.email,
+                                    text: $viewModel.email,
+                                    error: viewModel.emailValidationError,
+                                    isValidating: $viewModel.isEmailChecking)
             
             CustomSecureFieldWithError(title: L10n.password,
                                        text: $viewModel.password,

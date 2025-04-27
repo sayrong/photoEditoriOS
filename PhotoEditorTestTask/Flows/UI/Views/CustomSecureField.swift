@@ -16,23 +16,33 @@ struct CustomSecureField: View {
     
     var body: some View {
         HStack {
-            if isPasswordVisible {
-                CustomTextField(title: title, text: $text, isValid: isValid)
-            } else {
-                SecureField(title, text: $text)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .errorBorder(isValid: isValid)
+            Image(systemName: "lock.fill")
+                .foregroundColor(.gray)
+                .frame(width: 20)
+
+            Group {
+                if isPasswordVisible {
+                    TextField(title, text: $text)
+                        .autocapitalization(.none)
+                        .disableAutocorrection(true)
+                } else {
+                    SecureField(title, text: $text)
+                }
             }
-        }.overlay(alignment: .trailing) {
+            .frame(minHeight: 22)
+            
             Button {
                 isPasswordVisible.toggle()
             } label: {
                 Image(systemName: isPasswordVisible ? "eye.fill" : "eye.slash.fill")
                     .foregroundColor(.gray)
-                    .padding(.trailing, 8)
             }
-            .padding(.trailing)
         }
+        .padding()
+        .background(Color.white)
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+        .errorBorder(isValid: isValid)
     }
 }
 
@@ -51,4 +61,16 @@ struct CustomSecureFieldWithError: View {
                 .opacity(error == nil ? 0 : 1)
         }
     }
+}
+
+#Preview {
+    VStack(spacing: 30) {
+        CustomSecureField(title: "Password", text: .constant(""), isValid: true)
+        
+        CustomSecureFieldWithError(title: "Password", text: .constant("12345"),
+                                   error: "Error Message")
+    }
+    .frame(maxHeight: .infinity)
+    .padding()
+    .background(Asset.Colors.background.swiftUIColor)
 }

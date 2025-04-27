@@ -6,7 +6,7 @@
   
 */
 "Sign in" = "Авторизация";
-"Welcome Message" = "Для персонализированного опыта, пожалуйста, войдите в свою учетную запись.";
+"Welcome Message" = "Для персонализированного опыта, пожалуйста, войдите в свою учетную запись";
 "Sign in with Google" = "Войти с Google";
 "Log in" = "Войти";
 "Or" = "Или";
@@ -18,3 +18,19 @@
 "Confirm Password" = "Подтвердите пароль";
 "Create Account" = "Создать аккаунт";
 "Register" = "Регистрация";
+"Reset Your Password" = "Сбросить пароль";
+"Send Reset Instructions" = "Отправить инструкцию по сбросу";
+"Cancel" = "Отмена";
+"Instructions to reset password" = "Введите свой адрес электронной почты, и мы вышлем вам инструкции по сбросу пароля";
+"Fill details to create a new account" = "Введите ваши данные, чтобы создать новую учетную запись";
+"Error" = "Ошибка";
+"Invalid email or password" = "Неверный email или пароль";
+"This email is already registered" = "Этот email уже зарегистрирован";
+"The password is too simple" = "Пароль слишком простой. Используйте не менее 6 символов";
+"Check your internet connection" = "Проверьте подключение к интернету";
+"Error occurred: %@" = "Произошла ошибка: %@";
+"Incorrect email" = "Некорректный email";
+"Email's already taken" = "Email уже занят";
+"Server error" = "Ошибка сервера";
+"Incorrect password" = "Некорректный пароль";
+"Passwords don't match" = "Пароли не совпадают";

@@ -68,8 +68,8 @@ final class AuthCoordinator: ObservableObject {
     }
     
     // MARK: Alert
-    private func showError(_ message: String) {
-        alertMessage = AlertMessage(title: "Ошибка", message: message)
+    private func showError(_ message: AlertMessage) {
+        alertMessage = message
     }
 }
 
@@ -86,8 +86,8 @@ extension AuthCoordinator: LoginCoordinatorDelegate {
         navigateTo(destination: .register)
     }
     
-    func loginDidFail(with error: String) {
-        showError(error)
+    func loginDidFail(with message: AlertMessage) {
+        showError(message)
     }
 }
 
@@ -97,7 +97,7 @@ extension AuthCoordinator: RegistrationCoordinatorDelegate {
         onFinish?()
     }
     
-    func registrationDidFail(with error: String) {
-        showError(error)
+    func registrationDidFail(with message: AlertMessage) {
+        showError(message)
     }
 }
