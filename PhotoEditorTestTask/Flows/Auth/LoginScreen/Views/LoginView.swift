@@ -47,6 +47,7 @@ struct LoginView: View {
             viewModel.signInWithGoogle()
         } label: {
             HStack(spacing: 8) {
+                Spacer()
                 Asset.Images.iconGoogle.swiftUIImage
                     .resizable()
                     .aspectRatio(contentMode: .fit)
@@ -55,7 +56,9 @@ struct LoginView: View {
                 Text(L10n.signInWithGoogle)
                     .font(.system(size: 16, weight: .medium))
                     .foregroundStyle(Asset.Colors.secondaryText.swiftUIColor)
+                Spacer()
             }
+            .contentShape(Rectangle())
         }
         .signInButtonStyle()
     }
@@ -108,7 +111,7 @@ struct LoginView: View {
         Button {
             viewModel.logInDidTap()
         } label: {
-            Text(L10n.logIn)
+            WideButtonText(L10n.logIn)
         }
         .primaryButtonStyle()
         .disabled(!viewModel.canSubmitForm)

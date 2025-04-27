@@ -56,7 +56,7 @@ struct PasswordResetView: View {
         Button {
             viewModel.resetPassword()
         } label: {
-            Text(L10n.sendResetInstructions)
+            WideButtonText(L10n.sendResetInstructions)
         }
         .primaryButtonStyle()
         .disabled(!viewModel.canSubmit)
@@ -67,7 +67,7 @@ struct PasswordResetView: View {
         Button {
             viewModel.cancel()
         } label: {
-            Text(L10n.cancel)
+            WideButtonText(L10n.cancel)
         }
         .primaryCancelButtonStyle()
     }

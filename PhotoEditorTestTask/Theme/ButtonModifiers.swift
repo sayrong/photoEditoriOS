@@ -14,11 +14,11 @@ struct PrimaryButtonModifier: ViewModifier {
             .buttonText()
             .padding()
             .frame(maxWidth: .infinity)
-            .cornerRadius(12)
             .background(
                 RoundedRectangle(cornerRadius: 8)
                     .fill(Asset.Colors.primaryButton.swiftUIColor)
             )
+            .cornerRadius(12)
     }
 }
 
@@ -28,9 +28,8 @@ struct PrimaryCancelButtonModifier: ViewModifier {
         content
             .cancelButtonText()
             .padding()
-            .frame(maxWidth: .infinity)
-            .cornerRadius(12)
-            .overlay(
+            .frame(minWidth: 100, maxWidth: .infinity, minHeight: 44, maxHeight: 44, alignment: .center)
+            .background(
                 RoundedRectangle(cornerRadius: 12)
                     .stroke(Asset.Colors.primaryButton.swiftUIColor, lineWidth: 1)
             )
@@ -47,6 +46,7 @@ struct SignInButtonModifier: ViewModifier {
                 RoundedRectangle(cornerRadius: 8)
                     .fill(Asset.Colors.secondaryButton.swiftUIColor)
             )
+            .contentShape(RoundedRectangle(cornerRadius: 8))
             .foregroundStyle(Asset.Colors.secondaryText.swiftUIColor)
     }
 }
