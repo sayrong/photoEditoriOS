@@ -25,7 +25,10 @@ final class AuthCoordinator: ObservableObject {
     
     @Published var path: [Route] = []
     @Published var presentedSheet: Route?
-    @Published var alertMessage: AlertMessage?
+    @Published var mainAlertMessage: AlertMessage?
+    @Published var sheetAlertMessage: AlertMessage?
+    
+    var afterSheetClose: (() -> Void)?
     
     private var moduleFactory: IAuthModuleFactory
     private var onFinish: (() -> Void)?
@@ -72,8 +75,20 @@ final class AuthCoordinator: ObservableObject {
     }
     
     // MARK: Alert
-    private func showAlert(_ message: AlertMessage) {
-        alertMessage = message
+    private func showMainAlert(_ message: AlertMessage) {
+        mainAlertMessage = message
+    }
+    
+    private func showSheetAlert(_ message: AlertMessage) {
+        sheetAlertMessage = message
+    }
+    
+    private func showAlertAfterSheetClose(_ message: AlertMessage) {
+        afterSheetClose = { [weak self] in
+            self?.showMainAlert(message)
+            self?.afterSheetClose = nil
+        }
+        presentedSheet = nil
     }
 }
 
@@ -91,7 +106,7 @@ extension AuthCoordinator: LoginCoordinatorDelegate {
     }
     
     func loginDidFail(with message: AlertMessage) {
-        showAlert(message)
+        showMainAlert(message)
     }
 }
 
@@ -102,18 +117,17 @@ extension AuthCoordinator: RegistrationCoordinatorDelegate {
     }
     
     func registrationDidFail(with message: AlertMessage) {
-        showAlert(message)
+        showMainAlert(message)
     }
 }
 
 extension AuthCoordinator: PasswordResetCoordinatorDelegate {
     func passwordResetDidComplete(with message: AlertMessage) {
-        presentedSheet = nil
-        showAlert(message)
+        showAlertAfterSheetClose(message)
     }
     
     func passwordResetDidFail(with message: AlertMessage) {
-        showAlert(message)
+        showSheetAlert(message)
     }
     
     func passwordResetDidCancel() {

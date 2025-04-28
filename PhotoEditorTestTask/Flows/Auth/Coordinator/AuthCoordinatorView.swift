@@ -19,14 +19,22 @@ struct AuthCoordinatorView: View {
                 }
                 .sheet(item: $coordinator.presentedSheet) { route in
                     coordinator.view(for: route)
+                        .onDisappear {
+                            coordinator.afterSheetClose?()
+                        }
+                        .alert(item: $coordinator.sheetAlertMessage) { $0.makeAlert() }
                 }
-                .alert(item: $coordinator.alertMessage) { alert in
-                    Alert(
-                        title: Text(alert.title),
-                        message: Text(alert.message),
-                        dismissButton: .default(Text(L10n.ok))
-                    )
-                }
+                .alert(item: $coordinator.mainAlertMessage) { $0.makeAlert() }
         }
+    }
+}
+
+extension AlertMessage {
+    func makeAlert() -> Alert {
+        Alert(
+            title: Text(self.title),
+            message: Text(self.message),
+            dismissButton: .default(Text(L10n.ok))
+        )
     }
 }
