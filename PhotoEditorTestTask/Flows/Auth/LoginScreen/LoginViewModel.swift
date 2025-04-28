@@ -42,7 +42,18 @@ final class LoginViewModel: ObservableObject {
     }
     
     func signInWithGoogle() {
-        
+        Task {
+            let result = await authService.signInWithGoogle(presentingControllerProvider: DefaultPresentingControllerProvider())
+            await MainActor.run {
+                switch result {
+                case .success(let success):
+                    self.delegate?.loginDidComplete()
+                case .failure(let authError):
+                    let error = AlertMessage(title: L10n.error, message: authError.userMessage)
+                    self.delegate?.loginDidFail(with: error)
+                }
+            }
+        }
     }
 
     func logInDidTap() {

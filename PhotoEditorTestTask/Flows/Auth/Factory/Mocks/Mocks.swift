@@ -38,6 +38,10 @@ final class MockAuthService: IAuthService {
         return .success(())
     }
     
+    func signInWithGoogle(presentingControllerProvider: any PresentingControllerProvider) async -> Result<User, AuthError> {
+        return .success(User(id: "124", email: "vv@qq.com"))
+    }
+    
     func login(_ email: String, _ password: String) async -> Result<User, AuthError> {
         return .success(User(id: "124", email: "vv@qq.com"))
     }

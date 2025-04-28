@@ -6,6 +6,8 @@
 //
 
 import FirebaseAuth
+import GoogleSignIn
+import FirebaseCore
 
 enum AuthError: Error {
     case invalidCredentials
@@ -31,10 +33,11 @@ enum AuthError: Error {
 }
 
 protocol IAuthService {
-    func isEmailValidForRegistration(_ email: String) async -> Result<Bool, AuthError>
-    func register(_ email: String, _ password: String) async -> Result<User, AuthError>
     func login(_ email: String, _ password: String) async -> Result<User, AuthError>
+    func signInWithGoogle(presentingControllerProvider: PresentingControllerProvider) async -> Result<User, AuthError>
+    func register(_ email: String, _ password: String) async -> Result<User, AuthError>
     func sendPasswordReset(withEmail email: String) async -> Result<Void, AuthError>
+    func isEmailValidForRegistration(_ email: String) async -> Result<Bool, AuthError>
 }
 
 final class FirebaseAuthService: IAuthService {
@@ -66,6 +69,30 @@ final class FirebaseAuthService: IAuthService {
     func login(_ email: String, _ password: String) async -> Result<User, AuthError> {
         do {
             let authData = try await Auth.auth().signIn(withEmail: email, password: password)
+            let user = User(id: authData.user.uid, email: authData.user.email ?? "")
+            return .success(user)
+        } catch {
+            print(error.localizedDescription)
+            return .failure(mapErrorToAuthError(error))
+        }
+    }
+    
+    func signInWithGoogle(presentingControllerProvider: PresentingControllerProvider) async -> Result<User, AuthError> {
+        guard let clientID = FirebaseApp.app()?.options.clientID else {
+            return .failure(.unknownError(message: "clientID not found"))
+        }
+
+        let config = GIDConfiguration(clientID: clientID)
+        GIDSignIn.sharedInstance.configuration = config
+        
+        do {
+            let result = try await GIDSignIn.sharedInstance.signIn(withPresenting: presentingControllerProvider.presentingViewController())
+            guard let idToken = result.user.idToken?.tokenString else {
+                return .failure(.unknownError(message: "idToken not found"))
+            }
+            let credential = GoogleAuthProvider.credential(withIDToken: idToken,
+                                                           accessToken: result.user.accessToken.tokenString)
+            let authData = try await Auth.auth().signIn(with: credential)
             let user = User(id: authData.user.uid, email: authData.user.email ?? "")
             return .success(user)
         } catch {
