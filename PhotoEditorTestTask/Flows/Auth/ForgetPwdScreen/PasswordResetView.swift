@@ -69,7 +69,7 @@ struct PasswordResetView: View {
         } label: {
             WideButtonText(L10n.cancel)
         }
-        .primaryCancelButtonStyle()
+        .secondaryButtonStyle()
     }
 }
 

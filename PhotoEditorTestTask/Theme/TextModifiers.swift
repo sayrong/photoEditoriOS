@@ -31,7 +31,7 @@ struct ButtonTextModifier: ViewModifier {
     }
 }
 
-struct CancelButtonTextModifier: ViewModifier {
+struct SecondaryButtonTextModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .font(.system(size: 18, weight: .semibold))
@@ -77,6 +77,6 @@ extension View {
     }
     
     func cancelButtonText() -> some View {
-        self.modifier(CancelButtonTextModifier())
+        self.modifier(SecondaryButtonTextModifier())
     }
 }

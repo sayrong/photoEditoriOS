@@ -22,7 +22,7 @@ struct PrimaryButtonModifier: ViewModifier {
     }
 }
 
-struct PrimaryCancelButtonModifier: ViewModifier {
+struct SecondaryButtonModifier: ViewModifier {
     
     func body(content: Content) -> some View {
         content
@@ -56,8 +56,8 @@ extension View {
         self.modifier(PrimaryButtonModifier())
     }
     
-    func primaryCancelButtonStyle(isEnabled: Bool = true) -> some View {
-        self.modifier(PrimaryCancelButtonModifier())
+    func secondaryButtonStyle(isEnabled: Bool = true) -> some View {
+        self.modifier(SecondaryButtonModifier())
     }
     
     func signInButtonStyle() -> some View {
