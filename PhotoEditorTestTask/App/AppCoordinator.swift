@@ -17,9 +17,12 @@ final class AppCoordinator: ObservableObject {
     @Published var currentFlow: AppFlow = .auth
     
     private let container: DependencyContainer
+    private var authService: IAuthService?
+    private var authStateListenerHandle: AuthStateListenerHandle?
     
     init(container: DependencyContainer = .shared) {
         self.container = container
+        subscribeToAuthStateChanges()
     }
 
     private lazy var authCoordinator = AuthCoordinator(
@@ -47,5 +50,31 @@ final class AppCoordinator: ObservableObject {
     
     private func switchToAuth() {
         currentFlow = .auth
+    }
+    
+    private func subscribeToAuthStateChanges() {
+        if authService == nil {
+            authService = container.authService()
+        }
+        authStateListenerHandle = authService?.addAuthStateChangeListener { [weak self] user in
+            guard let self = self else { return }
+
+            if user != nil {
+                self.switchToMain()
+            } else {
+                self.switchToAuth()
+            }
+        }
+        
+        // Workaround to get actual token state
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.authService?.refreshUserToken()
+        }
+    }
+    
+    deinit {
+        if let handle = authStateListenerHandle {
+            authService?.removeAuthStateChangeListener(handle)
+        }
     }
 }

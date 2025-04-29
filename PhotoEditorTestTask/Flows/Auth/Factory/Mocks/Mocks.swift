@@ -34,6 +34,14 @@ final class MockValidator: IUserCredentialsValidator {
 }
 
 final class MockAuthService: IAuthService {
+    func refreshUserToken() { }
+    
+    func addAuthStateChangeListener(_ handler: @escaping AuthStateChangeHandler) -> AuthStateListenerHandle {
+        return .init()
+    }
+    
+    func removeAuthStateChangeListener(_ handle: AuthStateListenerHandle) { }
+    
     func sendPasswordReset(withEmail email: String) async -> Result<Void, AuthError> {
         return .success(())
     }

@@ -32,16 +32,29 @@ enum AuthError: Error {
     }
 }
 
+typealias AuthStateChangeHandler = (User?) -> Void
+typealias AuthStateListenerHandle = UUID
+
 protocol IAuthService {
     func login(_ email: String, _ password: String) async -> Result<User, AuthError>
     func signInWithGoogle(presentingControllerProvider: PresentingControllerProvider) async -> Result<User, AuthError>
     func register(_ email: String, _ password: String) async -> Result<User, AuthError>
     func sendPasswordReset(withEmail email: String) async -> Result<Void, AuthError>
     func isEmailValidForRegistration(_ email: String) async -> Result<Bool, AuthError>
+    func addAuthStateChangeListener(_ handler: @escaping AuthStateChangeHandler) -> AuthStateListenerHandle
+    func removeAuthStateChangeListener(_ handle: AuthStateListenerHandle)
+    func refreshUserToken()
 }
 
 final class FirebaseAuthService: IAuthService {
     
+    private var stateChangeListeners: [AuthStateListenerHandle: AuthStateChangeHandler] = [:]
+    private var firebaseListenerHandle: NSObjectProtocol?
+    
+    init() {
+        setupFirebaseAuthListener()
+    }
+
     // Soon deprecated
     func isEmailValidForRegistration(_ email: String) async -> Result<Bool, AuthError> {
         do {
@@ -77,6 +90,7 @@ final class FirebaseAuthService: IAuthService {
         }
     }
     
+    @MainActor
     func signInWithGoogle(presentingControllerProvider: PresentingControllerProvider) async -> Result<User, AuthError> {
         guard let clientID = FirebaseApp.app()?.options.clientID else {
             return .failure(.unknownError(message: "clientID not found"))
@@ -86,7 +100,8 @@ final class FirebaseAuthService: IAuthService {
         GIDSignIn.sharedInstance.configuration = config
         
         do {
-            let result = try await GIDSignIn.sharedInstance.signIn(withPresenting: presentingControllerProvider.presentingViewController())
+            let vc = presentingControllerProvider.presentingViewController()
+            let result = try await GIDSignIn.sharedInstance.signIn(withPresenting: vc)
             guard let idToken = result.user.idToken?.tokenString else {
                 return .failure(.unknownError(message: "idToken not found"))
             }
@@ -111,6 +126,45 @@ final class FirebaseAuthService: IAuthService {
         }
     }
     
+    @discardableResult
+    func addAuthStateChangeListener(_ handler: @escaping AuthStateChangeHandler) -> AuthStateListenerHandle {
+        let handle = AuthStateListenerHandle()
+        stateChangeListeners[handle] = handler
+        return handle
+    }
+    
+    func refreshUserToken() {
+        guard let firebaseUser = Auth.auth().currentUser else {
+            return
+        }
+        firebaseUser.getIDTokenForcingRefresh(true) { _, error in
+            if let error = error {
+                print("Error receiving a token: \(error.localizedDescription)")
+                try? Auth.auth().signOut()
+                return
+            }
+            print("Token successfully updated")
+        }
+    }
+    
+    func removeAuthStateChangeListener(_ handle: AuthStateListenerHandle) {
+        stateChangeListeners.removeValue(forKey: handle)
+    }
+    
+    private func setupFirebaseAuthListener() {
+        firebaseListenerHandle = Auth.auth().addStateDidChangeListener { [weak self] _, firebaseUser in
+            guard let self = self else { return }
+            
+            // Преобразуем Firebase User в нашу модель User
+            let user = firebaseUser.map { User(id: $0.uid, email: $0.email ?? "") }
+            
+            // Уведомляем всех наблюдателей
+            self.stateChangeListeners.values.forEach { handler in
+                handler(user)
+            }
+        }
+    }
+    
     private func mapErrorToAuthError(_ error: any Error) -> AuthError {
         let error = error as NSError
         guard error.domain == AuthErrors.domain else {
@@ -127,6 +181,12 @@ final class FirebaseAuthService: IAuthService {
             return AuthError.networkError
         default:
             return AuthError.unknownError(message: error.localizedDescription)
+        }
+    }
+    
+    deinit {
+        if let handle = firebaseListenerHandle {
+            Auth.auth().removeStateDidChangeListener(handle)
         }
     }
 }

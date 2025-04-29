@@ -46,7 +46,7 @@ final class LoginViewModel: ObservableObject {
             let result = await authService.signInWithGoogle(presentingControllerProvider: DefaultPresentingControllerProvider())
             await MainActor.run {
                 switch result {
-                case .success(let success):
+                case .success:
                     self.delegate?.loginDidComplete()
                 case .failure(let authError):
                     let error = AlertMessage(title: L10n.error, message: authError.userMessage)

@@ -8,21 +8,25 @@
 import UIKit
 
 extension UIApplication {
-    func topViewController(base: UIViewController? = UIApplication.shared.connectedScenes
-                                .compactMap { ($0 as? UIWindowScene)?.keyWindow }
-                                .first?.rootViewController) -> UIViewController? {
-        if let nav = base as? UINavigationController {
+    
+    func topViewController(base: UIViewController? = nil) -> UIViewController? {
+        let baseVC = base ?? UIApplication.shared.connectedScenes
+            .filter { $0.activationState == .foregroundActive }
+            .compactMap { ($0 as? UIWindowScene)?.keyWindow }
+            .first?.rootViewController
+        
+        if let nav = baseVC as? UINavigationController {
             return topViewController(base: nav.visibleViewController)
         }
-        if let tab = base as? UITabBarController {
+        if let tab = baseVC as? UITabBarController {
             if let selected = tab.selectedViewController {
                 return topViewController(base: selected)
             }
         }
-        if let presented = base?.presentedViewController {
+        if let presented = baseVC?.presentedViewController {
             return topViewController(base: presented)
         }
-        return base
+        return baseVC
     }
 }
 
@@ -33,6 +37,10 @@ protocol PresentingControllerProvider {
 
 final class DefaultPresentingControllerProvider: PresentingControllerProvider {
     func presentingViewController() -> UIViewController {
-        UIApplication.shared.topViewController() ?? UIViewController()
+        guard let vc = UIApplication.shared.topViewController() else {
+            assertionFailure("No topViewController found. This should not happen.")
+            return UIViewController()
+        }
+        return vc
     }
 }
