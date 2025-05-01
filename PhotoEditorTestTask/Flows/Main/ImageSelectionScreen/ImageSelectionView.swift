@@ -45,14 +45,14 @@ struct ImageSelectionView: View {
     private func controlSection() -> some View {
         VStack(spacing: 24) {
             Button {
-               
+                viewModel.fromLibraryDidTap()
             } label: {
                 WideButtonText("Выбрать фото")
             }
             .primaryButtonStyle()
             
             Button {
-               
+                viewModel.fromCameraDidTap()
             } label: {
                 WideButtonText("Сделать фото")
             }

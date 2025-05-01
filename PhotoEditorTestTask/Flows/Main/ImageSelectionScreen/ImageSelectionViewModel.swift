@@ -8,9 +8,24 @@
 import Combine
 import UIKit
 
+protocol ImageSelectionCoordinatorDelegate: AnyObject {
+    func importPhotoFromLibrary()
+    func importPhotoFromCamera()
+}
+
 final class ImageSelectionViewModel: ObservableObject {
     
-    @Published private var showingImagePicker = false
-    @Published private var showingCamera = false
-    @Published private var selectedImage: UIImage? = nil
+    private weak var delegate: ImageSelectionCoordinatorDelegate?
+    
+    init(delegate: ImageSelectionCoordinatorDelegate? = nil) {
+        self.delegate = delegate
+    }
+    
+    func fromLibraryDidTap() {
+        delegate?.importPhotoFromLibrary()
+    }
+    
+    func fromCameraDidTap() {
+        delegate?.importPhotoFromCamera()
+    }
 }

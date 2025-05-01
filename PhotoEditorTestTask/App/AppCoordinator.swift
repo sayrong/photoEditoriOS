@@ -36,12 +36,16 @@ final class AppCoordinator: ObservableObject {
         case .auth:
             getAuthCoordinatorView()
         case .main:
-            Text("Main Flow")
+            getMainCoordinatorView()
         }
     }
     
     private func getAuthCoordinatorView() -> some View {
         AuthCoordinatorView(coordinator: authCoordinator)
+    }
+    
+    private func getMainCoordinatorView() -> some View {
+        MainCoordinatorView(coordinator: MainCoordinator())
     }
     
     private func switchToMain() {
