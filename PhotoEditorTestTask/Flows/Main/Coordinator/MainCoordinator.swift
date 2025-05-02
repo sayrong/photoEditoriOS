@@ -38,9 +38,7 @@ final class MainCoordinator: ObservableObject {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(.black)
         case .editor(let img):
-            Image(uiImage: img)
-                .resizable()
-                .scaledToFit()
+            PhotoEditorView(image: img)
         }
     }
     
