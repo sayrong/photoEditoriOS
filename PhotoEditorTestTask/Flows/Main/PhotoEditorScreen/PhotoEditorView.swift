@@ -55,7 +55,12 @@ struct PhotoEditorView: View {
             case .move:
                 MovableImageControls(viewModel: movableImageVM)
             case .crop:
-                Spacer()
+                Button {
+                    
+                } label: {
+                    Text("crop")
+                }
+
             case .filters:
                 Spacer()
             case .markup:
@@ -71,9 +76,47 @@ struct PhotoEditorView: View {
     
     func canvas() -> some View {
         ZStack {
+            Color.clear //
             MovableImage(viewModel: movableImageVM)
+                //.disabled(editMode != .move)
+            
+            if editMode == .crop {
+                crop()
+            }
         }
+        .clipped() // обрезает всё, что выходит за пределы
+        .contentShape(Rectangle()) // чтобы жесты работали только внутри
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+    
+    @State private var imageFrame: CGRect = .zero
+    
+    @State private var cropPosition: CGPoint = CGPoint(x: 200, y: 200)
+    @State private var cropSize: CGSize = CGSize(width: 300, height: 300)
+
+    
+    func crop() -> some View {
+        Group {
+            // Затемнение вокруг
+            Color.black.opacity(0.5)
+                .mask(
+                    Rectangle()
+                        .overlay(
+                            Rectangle()
+                                .frame(width: cropSize.width, height: cropSize.height)
+                                .position(cropPosition)
+                                .blendMode(.destinationOut)
+                        )
+                )
+                
+            
+//            // Видимая белая рамка
+//            Rectangle()
+//                .stroke(Color.white, lineWidth: 2)
+//                .frame(width: cropSize.width, height: cropSize.height)
+//                .position(cropPosition)
+        }
+        .allowsHitTesting(false)
     }
     
     func editModePanel() -> some View {
@@ -97,6 +140,24 @@ struct PhotoEditorView: View {
     }
 }
 
+
 #Preview {
     PhotoEditorView(image: UIImage(systemName: "arrow.clockwise.icloud")!)
+}
+
+
+extension View {
+    func snapshot() -> UIImage {
+        let controller = UIHostingController(rootView: self)
+        let view = controller.view
+
+        let targetSize = controller.view.intrinsicContentSize
+        view?.bounds = CGRect(origin: .zero, size: targetSize)
+        view?.backgroundColor = .clear
+
+        let renderer = UIGraphicsImageRenderer(size: targetSize)
+        return renderer.image { _ in
+            view?.drawHierarchy(in: view!.bounds, afterScreenUpdates: true)
+        }
+    }
 }

@@ -36,6 +36,11 @@ struct MovableImage: View {
     @GestureState var gestureScale: CGFloat = 1.0
     @GestureState var gestureRotation: Angle = .zero
     
+    let maxScale: CGFloat = 2.0
+    let minScale: CGFloat = 0.5
+    
+    @State private var contentSize: CGSize = .zero
+    
     var body: some View {
         Image(uiImage: viewModel.image)
             .resizable()
@@ -59,7 +64,8 @@ struct MovableImage: View {
                                 state = value.magnification
                             }
                             .onEnded { value in
-                                viewModel.currentScale *= value.magnification
+                                let newValue = viewModel.currentScale * value.magnification
+                                viewModel.currentScale = min(max(newValue, minScale), maxScale)
                             }
                     )
                     .simultaneously(with:
