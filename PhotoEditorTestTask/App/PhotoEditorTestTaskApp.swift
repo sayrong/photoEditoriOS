@@ -31,7 +31,8 @@ struct PhotoEditorTestTaskApp: App {
 
     var body: some Scene {
         WindowGroup {
-            appCoordinator.rootView
+            //appCoordinator.rootView
+            CropView1(image: UIImage(named: "gotta.JPG")!)
         }
     }
 }

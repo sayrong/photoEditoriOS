@@ -7,6 +7,21 @@
 
 import SwiftUI
 
+struct CropInfo {
+    
+}
+
+final class PhotoEditorViewModel: ObservableObject {
+    
+    var originalImage: UIImage
+    var crop: CropInfo?
+    
+    init(originalImage: UIImage) {
+        self.originalImage = originalImage
+    }
+}
+
+
 struct PhotoEditorView: View {
     
     enum EditMode: CaseIterable {
@@ -19,30 +34,30 @@ struct PhotoEditorView: View {
             switch self {
             case .move:
                 "move.3d"
-            case .crop:
-                "crop"
             case .filters:
                 "camera.filters"
             case .markup:
                 "pencil.tip"
+            case .crop:
+                "crop"
             }
         }
     }
     
-    var image: UIImage
+    var originalImage: UIImage
+    @State var editMode: EditMode?
     @StateObject var movableImageVM: MovableImageViewModel
     
-    @State var editMode: EditMode?
-    
     init(image: UIImage) {
-        self.image = image
+        self.originalImage = image
         _movableImageVM = StateObject(wrappedValue: MovableImageViewModel(image: image))
     }
     
     var body: some View {
         VStack(spacing: 0) {
             editControls()
-            canvas()
+            //canvas()
+            CropView(image: originalImage)
             editModePanel()
         }
         .background(Asset.Colors.background.swiftUIColor)
@@ -142,7 +157,7 @@ struct PhotoEditorView: View {
 
 
 #Preview {
-    PhotoEditorView(image: UIImage(systemName: "arrow.clockwise.icloud")!)
+    PhotoEditorView(image: UIImage(named: "gotta.JPG")!)
 }
 
 
