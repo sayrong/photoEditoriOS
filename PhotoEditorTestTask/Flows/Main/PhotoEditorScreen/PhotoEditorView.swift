@@ -56,8 +56,7 @@ struct PhotoEditorView: View {
     var body: some View {
         VStack(spacing: 0) {
             editControls()
-            //canvas()
-            CropView(image: originalImage)
+            Color.gray
             editModePanel()
         }
         .background(Asset.Colors.background.swiftUIColor)
