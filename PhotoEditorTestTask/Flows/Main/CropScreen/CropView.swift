@@ -118,5 +118,5 @@ struct CropView: View {
 }
 
 #Preview {
-    CropView(viewModel: CropViewModel(image: UIImage(named: "gotta.JPG")!))
+    CropView(viewModel: CropViewModel(image: UIImage(named: "gotta.JPG")!, onCrop: nil))
 }

@@ -19,8 +19,9 @@ final class CropViewModel: ObservableObject {
     var lastOffset: CGSize = .zero
     var imageViewSize: CGSize = .zero
     
-    init(image: UIImage) {
+    init(image: UIImage, onCrop: ((UIImage?) -> Void)?) {
         self.image = image
+        self.onCrop = onCrop
     }
     
     // MARK: Gestures

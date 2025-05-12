@@ -9,12 +9,6 @@ import SwiftUI
 
 final class MovableImageViewModel: ObservableObject {
     
-    var image: UIImage
-    
-    init(image: UIImage) {
-        self.image = image
-    }
-    
     @Published var position: CGSize = .zero
     @Published var currentScale: CGFloat = 1.0
     @Published var rotationAngle: Angle = .zero
@@ -30,19 +24,18 @@ final class MovableImageViewModel: ObservableObject {
 
 struct MovableImage: View {
     
+    let image: UIImage
     @ObservedObject var viewModel: MovableImageViewModel
     
-    @GestureState var dragOffset: CGSize = .zero
-    @GestureState var gestureScale: CGFloat = 1.0
-    @GestureState var gestureRotation: Angle = .zero
+    @GestureState private var dragOffset: CGSize = .zero
+    @GestureState private var gestureScale: CGFloat = 1.0
+    @GestureState private var gestureRotation: Angle = .zero
     
     let maxScale: CGFloat = 2.0
     let minScale: CGFloat = 0.5
     
-    @State private var contentSize: CGSize = .zero
-    
     var body: some View {
-        Image(uiImage: viewModel.image)
+        Image(uiImage: image)
             .resizable()
             .scaledToFit()
             .scaleEffect(viewModel.currentScale * gestureScale)
@@ -61,20 +54,29 @@ struct MovableImage: View {
                     .simultaneously(
                         with: MagnifyGesture()
                             .updating($gestureScale) { value, state, _ in
-                                state = value.magnification
+                                state = min(max(value.magnification, minScale), maxScale)
                             }
                             .onEnded { value in
                                 let newValue = viewModel.currentScale * value.magnification
-                                viewModel.currentScale = min(max(newValue, minScale), maxScale)
+                                guard newValue > minScale && newValue < maxScale else { return }
+                                viewModel.currentScale = newValue
                             }
                     )
                     .simultaneously(with:
                         RotateGesture()
                         .updating($gestureRotation) {  value, state, _ in
-                            state = value.rotation
+                            let rotation = value.rotation
+                            if rotation.radians.isFinite {
+                                state = rotation
+                            }
                         }
                         .onEnded { value in
-                            viewModel.rotationAngle += value.rotation
+                            let rotation = value.rotation
+                            if rotation.radians.isFinite {
+                                viewModel.rotationAngle += rotation
+                            } else {
+                                print("Invalid gesture rotation in .onEnded: \(rotation)")
+                            }
                         }
                     )
             )
