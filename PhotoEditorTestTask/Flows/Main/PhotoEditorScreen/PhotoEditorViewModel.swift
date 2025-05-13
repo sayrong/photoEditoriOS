@@ -19,6 +19,8 @@ final class PhotoEditorViewModel: ObservableObject {
     private var originalImage: UIImage
     private var processedImage: (UIImage, CropInfo)?
     
+    private var filteredImage: (UIImage, FilterType, CropInfo?)?
+    
     @Published var editMode: EditMode?
     @Published var photoState: PhotoEditState
     
@@ -41,7 +43,8 @@ final class PhotoEditorViewModel: ObservableObject {
     
     func currentImage() -> UIImage {
         let croppedImage = applyCrop()
-        return croppedImage
+        let filteredImage = applyFilter(image: croppedImage)
+        return filteredImage
     }
     
     func applyCrop() -> UIImage {
@@ -63,6 +66,23 @@ final class PhotoEditorViewModel: ObservableObject {
             assertionFailure()
         }
         return cropImage ?? originalImage
+    }
+    
+    func applyFilter(image: UIImage) -> UIImage {
+        guard let filterInfo = photoState.filter else {
+            return image
+        }
+        if let filteredImage, filteredImage.2 == photoState.crop, filteredImage.1 == filterInfo {
+            return filteredImage.0
+        }
+        let filerImage = image.apply(filter: filterInfo)
+        
+        if let filerImage {
+            filteredImage = (filerImage, filterInfo, photoState.crop)
+        } else {
+            assertionFailure()
+        }
+        return filerImage ?? image
     }
     
     func canUndo() -> Bool {

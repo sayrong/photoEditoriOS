@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 
 struct PhotoEditorView: View {
     
@@ -15,20 +16,51 @@ struct PhotoEditorView: View {
         self.viewModel = viewModel
     }
     
+    @State var sliderValue: CGFloat = 0
+    @State private var isFilterControlEnabled = false
+    @State private var isIntensityControlEnabled = false
+    @State private var selectedFilter: FilterType?
+    
     var body: some View {
         VStack(spacing: 0) {
             editControls()
             canvas()
+            if isFilterControlEnabled {
+                FilterControlsView(isIntensityControlEnabled: isIntensityControlEnabled)
+            }
             editModePanel()
         }
         .background(Asset.Colors.background.swiftUIColor)
-        .onChange(of: viewModel.editMode) { _, newValue in
-            if newValue == .crop {
-                viewModel.startCropping()
-            }
+        .onChange(of: viewModel.editMode) { oldValue, newValue in
+            handleEditModeChange(oldValue, newValue)
         }
+        .onChange(of: viewModel.photoState.filter) { _, newValue in
+            handleFilterChange(newValue)
+        }
+
     }
     
+    private func handleEditModeChange(_ oldValue: EditMode?, _ newValue: EditMode?) {
+        if newValue == .crop {
+            viewModel.startCropping()
+        }
+        withAnimation {
+            isFilterControlEnabled = newValue == .filters
+        }
+        if oldValue == .filters {
+            viewModel.commitState()
+        }
+    }
+
+    private func handleFilterChange(_ newValue: FilterType?) {
+        withAnimation {
+            isIntensityControlEnabled = {
+                if case .sepia = newValue { return true }
+                return false
+            }()
+        }
+    }
+
     @ViewBuilder
     func undoRedoViews() -> some View {
         HStack {
@@ -61,10 +93,9 @@ struct PhotoEditorView: View {
     
     func editControls() -> some View {
         HStack {
-            undoRedoViews()
-            Spacer()
             switch viewModel.editMode {
             case .move:
+                undoRedoViews()
                 Spacer()
             case .crop:
                 Spacer()
@@ -73,6 +104,7 @@ struct PhotoEditorView: View {
             case .markup:
                 Spacer()
             case nil:
+                undoRedoViews()
                 Spacer()
             }
         }
@@ -112,6 +144,52 @@ struct PhotoEditorView: View {
                 }
             }
         }
+        .frame(maxWidth: .infinity)
+        .background(.black)
+    }
+
+    @ViewBuilder
+    private func FilterControlsView(isIntensityControlEnabled: Bool) -> some View {
+        VStack(spacing: 0) {
+            if isIntensityControlEnabled {
+                filterIntensity()
+            }
+            filterTypes()
+        }
+    }
+    
+    func filterIntensity() -> some View {
+        Slider(value: $sliderValue, in: 0.0...1.0, onEditingChanged: { editing in
+            if !editing {
+                viewModel.photoState.filter = .sepia(sliderValue)
+            }
+        })
+        .onAppear {
+            if case .sepia(let value) = viewModel.photoState.filter {
+                sliderValue = value
+            }
+        }
+    }
+    
+    func filterTypes() -> some View {
+        ScrollView(.horizontal) {
+            HStack(spacing: 10) {
+                Button {
+                    viewModel.photoState.filter = nil
+                } label: {
+                    Text("Orig")
+                }
+                ForEach(FilterType.allCases, id: \.self) { type in
+                    Button {
+                        viewModel.photoState.filter = type
+                    } label: {
+                        Text(type.displayName)
+                    }
+                }
+            }
+            .frame(height: 40)
+        }
+        .scaledToFit()
         .frame(maxWidth: .infinity)
         .background(.black)
     }

@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import CoreImage
 
 extension UIImage {
     
@@ -37,5 +38,31 @@ extension UIImage {
         }
         
         return UIImage(cgImage: result)
+    }
+    
+    func apply(filter: FilterType) -> UIImage? {
+        let inputImage = self
+        
+        guard let ciImage = CIImage(image: inputImage) else { return nil }
+
+        guard let coreImageFilter = CIFilter(name: filter.ciFilterName) else {
+            print("Фильтр $filter.ciFilterName) не найден")
+            return nil
+        }
+
+        coreImageFilter.setValue(ciImage, forKey: kCIInputImageKey)
+
+        if filter.hasIntensity, let intensity = filter.intensityValue {
+            coreImageFilter.setValue(intensity, forKey: kCIInputIntensityKey)
+        }
+
+        guard let outputImage = coreImageFilter.outputImage else { return nil }
+
+        let context = CIContext(options: nil)
+        guard let cgImage = context.createCGImage(outputImage, from: outputImage.extent) else {
+            return nil
+        }
+
+        return UIImage(cgImage: cgImage)
     }
 }

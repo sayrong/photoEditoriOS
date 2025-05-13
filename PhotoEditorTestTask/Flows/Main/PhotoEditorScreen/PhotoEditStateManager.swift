@@ -17,6 +17,7 @@ struct PhotoEditState: Equatable {
     var scale: CGFloat = 1.0
     var rotation: Angle = .zero
     var crop: CropInfo?
+    var filter: FilterType?
 }
 
 final class PhotoEditStateManager {
@@ -36,6 +37,7 @@ final class PhotoEditStateManager {
     }
 
     func commitState(_ state: PhotoEditState) {
+        guard current != state else { return }
         redoStack.removeAll()
         states.append(state)
         
