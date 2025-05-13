@@ -7,62 +7,6 @@
 
 import SwiftUI
 
-protocol PhotoEditorCoordinatorDelegate: AnyObject {
-    func presentCropper(with image: UIImage, onComplete: @escaping (UIImage?) -> Void)
-
-}
-
-final class PhotoEditorViewModel: ObservableObject {
-    
-    private weak var delegate: PhotoEditorCoordinatorDelegate?
-    
-    private var originalImage: UIImage
-    private var croppedImage: UIImage?
-    
-    var editImage: UIImage {
-        croppedImage ?? originalImage
-    }
-    
-    @Published var editMode: EditMode?
-    @Published var movableImageVM: MovableImageViewModel
-    
-    init(originalImage: UIImage, delegate: PhotoEditorCoordinatorDelegate?) {
-        self.originalImage = originalImage
-        self.delegate = delegate
-        self.movableImageVM = MovableImageViewModel()
-    }
-    
-    func startCropping() {
-        delegate?.presentCropper(with: originalImage,
-                                 onComplete: { [weak self] result in
-            self?.croppedImage = result
-            self?.editMode = nil
-            self?.objectWillChange.send()
-        })
-    }
-    
-}
-
-enum EditMode: CaseIterable {
-    case move
-    case filters
-    case markup
-    case crop
-    
-    func iconName() -> String {
-        switch self {
-        case .move:
-            "move.3d"
-        case .filters:
-            "camera.filters"
-        case .markup:
-            "pencil.tip"
-        case .crop:
-            "crop"
-        }
-    }
-}
-
 struct PhotoEditorView: View {
     
     @ObservedObject var viewModel: PhotoEditorViewModel
@@ -85,19 +29,45 @@ struct PhotoEditorView: View {
         }
     }
     
+    @ViewBuilder
+    func undoRedoViews() -> some View {
+        HStack {
+            Button {
+                viewModel.undo()
+            } label: {
+                Image(systemName: "arrow.uturn.backward")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 20, height: 20)
+                    .padding(.horizontal, 12)
+            }
+            .buttonStyle(CustomButtonStyle())
+            .disabled(!viewModel.canUndo())
+            
+            Button {
+                viewModel.redo()
+            } label: {
+                Image(systemName: "arrow.uturn.forward")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 20, height: 20)
+                    .padding(.horizontal, 12)
+            }
+            .buttonStyle(CustomButtonStyle())
+            .disabled(!viewModel.canRedo())
+        }
+        .padding(.leading)
+    }
+    
     func editControls() -> some View {
         HStack {
+            undoRedoViews()
             Spacer()
             switch viewModel.editMode {
             case .move:
-                MovableImageControls(viewModel: viewModel.movableImageVM)
+                Spacer()
             case .crop:
-                Button {
-                    
-                } label: {
-                    Text("crop")
-                }
-
+                Spacer()
             case .filters:
                 Spacer()
             case .markup:
@@ -114,8 +84,12 @@ struct PhotoEditorView: View {
     func canvas() -> some View {
         ZStack {
             Color.clear //
-            MovableImage(image: viewModel.editImage,
-                         viewModel: viewModel.movableImageVM)
+            MovableImage(image: viewModel.currentImage(),
+                         position: $viewModel.photoState.position,
+                         currentScale: $viewModel.photoState.scale,
+                         rotationAngle: $viewModel.photoState.rotation,
+                         commitState: viewModel.commitState)
+            .disabled(viewModel.editMode != .move)
         }
         .clipped() // обрезает всё, что выходит за пределы
         .contentShape(Rectangle()) // чтобы жесты работали только внутри

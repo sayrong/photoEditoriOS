@@ -37,7 +37,7 @@ final class MainCoordinator: ObservableObject {
         case imageLibrary
         case camera
         case editor(UIImage)
-        case crop(UIImage, (UIImage?) -> Void)
+        case crop(UIImage, (CropInfo) -> Void)
     }
     
     @Published var path: [Route] = []
@@ -87,15 +87,15 @@ final class MainCoordinator: ObservableObject {
         return PhotoEditorView(viewModel: editorVM!)
     }
     
-    private func cropView(for image: UIImage, with onComplete: @escaping (UIImage?) -> Void) -> some View {
-        let vm = CropViewModel(image: image) { result in
+    private func cropView(for image: UIImage, with onComplete: @escaping (CropInfo) -> Void) -> some View {
+        let vm = CropViewModel(image: image, onCrop: { result in
             onComplete(result)
             self.presentedSheet = nil
-        }
+        }, onCancel: {
+            self.presentedSheet = nil
+        })
         return CropView(viewModel: vm)
     }
-    
-
 }
 
 extension MainCoordinator: ImageSelectionCoordinatorDelegate {
@@ -110,7 +110,7 @@ extension MainCoordinator: ImageSelectionCoordinatorDelegate {
 
 extension MainCoordinator: PhotoEditorCoordinatorDelegate {
     
-    func presentCropper(with image: UIImage, onComplete: @escaping (UIImage?) -> Void) {
+    func presentCropper(with image: UIImage, onComplete: @escaping (CropInfo) -> Void) {
         presentedSheet = .crop(image, onComplete)
     }
 }

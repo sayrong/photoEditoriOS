@@ -7,25 +7,15 @@
 
 import SwiftUI
 
-final class MovableImageViewModel: ObservableObject {
-    
-    @Published var position: CGSize = .zero
-    @Published var currentScale: CGFloat = 1.0
-    @Published var rotationAngle: Angle = .zero
-    
-    func reset() {
-        withAnimation {
-            position = .zero
-            currentScale = 1.0
-            rotationAngle = .zero
-        }
-    }
-}
-
 struct MovableImage: View {
     
     let image: UIImage
-    @ObservedObject var viewModel: MovableImageViewModel
+    
+    @Binding var position: CGSize
+    @Binding var currentScale: CGFloat
+    @Binding var rotationAngle: Angle
+    
+    var commitState: (() -> Void)?
     
     @GestureState private var dragOffset: CGSize = .zero
     @GestureState private var gestureScale: CGFloat = 1.0
@@ -38,18 +28,19 @@ struct MovableImage: View {
         Image(uiImage: image)
             .resizable()
             .scaledToFit()
-            .scaleEffect(viewModel.currentScale * gestureScale)
-            .rotationEffect(viewModel.rotationAngle + gestureRotation)
-            .offset(x: viewModel.position.width + dragOffset.width,
-                    y: viewModel.position.height + dragOffset.height)
+            .scaleEffect(currentScale * gestureScale)
+            .rotationEffect(rotationAngle + gestureRotation)
+            .offset(x: position.width + dragOffset.width,
+                    y: position.height + dragOffset.height)
             .gesture(
                 DragGesture()
                     .updating($dragOffset) { value, state, _ in
                         state = value.translation
                     }
                     .onEnded { value in
-                        viewModel.position.width += value.translation.width
-                        viewModel.position.height += value.translation.height
+                        position.width += value.translation.width
+                        position.height += value.translation.height
+                        commitState?()
                     }
                     .simultaneously(
                         with: MagnifyGesture()
@@ -57,9 +48,10 @@ struct MovableImage: View {
                                 state = min(max(value.magnification, minScale), maxScale)
                             }
                             .onEnded { value in
-                                let newValue = viewModel.currentScale * value.magnification
+                                let newValue = currentScale * value.magnification
                                 guard newValue > minScale && newValue < maxScale else { return }
-                                viewModel.currentScale = newValue
+                                currentScale = newValue
+                                commitState?()
                             }
                     )
                     .simultaneously(with:
@@ -73,30 +65,13 @@ struct MovableImage: View {
                         .onEnded { value in
                             let rotation = value.rotation
                             if rotation.radians.isFinite {
-                                viewModel.rotationAngle += rotation
+                                rotationAngle += rotation
+                                commitState?()
                             } else {
                                 print("Invalid gesture rotation in .onEnded: \(rotation)")
                             }
                         }
                     )
             )
-    }
-}
-
-struct MovableImageControls: View {
-    
-    @ObservedObject var viewModel: MovableImageViewModel
-    
-    var body: some View {
-        Button {
-            viewModel.reset()
-        } label: {
-            Image(systemName: "arrow.circlepath")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 24, height: 24)
-                .padding(8)
-                .foregroundStyle(.white)
-        }
     }
 }

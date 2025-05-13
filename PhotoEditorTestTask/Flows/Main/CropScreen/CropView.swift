@@ -47,11 +47,11 @@ struct CropView: View {
     private func controlButtons() -> some View {
         HStack {
             Button("Cancel") {
-                
+                viewModel.cancel()
             }
             Spacer()
             Button("Save") {
-                viewModel.cropImage()
+                viewModel.defineCrop()
             }
         }
         .padding(.horizontal, 20)
@@ -118,5 +118,5 @@ struct CropView: View {
 }
 
 #Preview {
-    CropView(viewModel: CropViewModel(image: UIImage(named: "gotta.JPG")!, onCrop: nil))
+    CropView(viewModel: CropViewModel(image: UIImage(named: "gotta.JPG")!, onCrop: nil, onCancel: nil))
 }

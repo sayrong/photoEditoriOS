@@ -10,7 +10,8 @@ import SwiftUI
 final class CropViewModel: ObservableObject {
     
     var image: UIImage
-    var onCrop: ((UIImage?) -> Void)?
+    var onCrop: ((CropInfo) -> Void)?
+    var onCancel: (() -> Void)?
     
     @Published var cropMode: CropMode = .square
     @Published var scale: CGFloat = 1
@@ -19,9 +20,18 @@ final class CropViewModel: ObservableObject {
     var lastOffset: CGSize = .zero
     var imageViewSize: CGSize = .zero
     
-    init(image: UIImage, onCrop: ((UIImage?) -> Void)?) {
+    init(image: UIImage, onCrop: ((CropInfo) -> Void)?, onCancel: (() -> Void)?) {
         self.image = image
         self.onCrop = onCrop
+    }
+    
+    func defineCrop() {
+        let cropRect = calculateCropRect(image)
+        onCrop?(CropInfo(mode: cropMode, rect: cropRect))
+    }
+    
+    func cancel() {
+        onCancel?()
     }
     
     // MARK: Gestures
@@ -77,50 +87,7 @@ final class CropViewModel: ObservableObject {
         let minScale = max(maskSize.width / imageSizeInView.width, maskSize.height / imageSizeInView.height)
         return (minScale, maxMagnificationScale)
     }
-    
-    // MARK: Image
-    func cropImage() {
-        var croppedImage: UIImage?
-        if cropMode == .circle {
-            croppedImage = cropToCircle(image)
-        } else {
-            croppedImage = cropToSquare(image)
-        }
-        onCrop?(croppedImage)
-    }
-    
-    private func cropToSquare(_ image: UIImage) -> UIImage? {
-        let cropRect = calculateCropRect(image)
-        
-        guard let cgImage = image.cgImage,
-              let result = cgImage.cropping(to: cropRect) else {
-            return nil
-        }
-        
-        return UIImage(cgImage: result)
-    }
-    
-    private func cropToCircle(_ image: UIImage) -> UIImage? {
-        let cropRect = calculateCropRect(image)
-        
-        let imageRendererFormat = image.imageRendererFormat
-        imageRendererFormat.opaque = false
-        
-        let circleCroppedImage = UIGraphicsImageRenderer(
-            size: cropRect.size,
-            format: imageRendererFormat).image { _ in
-                let drawRect = CGRect(origin: .zero, size: cropRect.size)
-                UIBezierPath(ovalIn: drawRect).addClip()
-                let drawImageRect = CGRect(
-                    origin: CGPoint(x: -cropRect.origin.x, y: -cropRect.origin.y),
-                    size: image.size
-                )
-                image.draw(in: drawImageRect)
-            }
-        
-        return circleCroppedImage
-    }
-    
+     
     private func calculateCropRect(_ image: UIImage) -> CGRect {
         let factor = min(
             (image.size.width / imageViewSize.width),
