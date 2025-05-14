@@ -32,46 +32,48 @@ struct MovableImage: View {
             .rotationEffect(rotationAngle + gestureRotation)
             .offset(x: position.width + dragOffset.width,
                     y: position.height + dragOffset.height)
-            .gesture(
-                DragGesture()
-                    .updating($dragOffset) { value, state, _ in
-                        state = value.translation
+            .gesture(gesture)
+    }
+    
+    private var gesture: some Gesture {
+        DragGesture()
+            .updating($dragOffset) { value, state, _ in
+                state = value.translation
+            }
+            .onEnded { value in
+                position.width += value.translation.width
+                position.height += value.translation.height
+                commitState?()
+            }
+            .simultaneously(with: MagnifyGesture()
+                .updating($gestureScale) { value, state, _ in
+                    let newValue = currentScale * value.magnification
+                    if newValue > minScale && newValue < maxScale {
+                        state = value.magnification
                     }
-                    .onEnded { value in
-                        position.width += value.translation.width
-                        position.height += value.translation.height
+                }
+                .onEnded { value in
+                    let newValue = currentScale * value.magnification
+                    currentScale = min(max(newValue, minScale), maxScale)
+                    commitState?()
+                }
+            )
+            .simultaneously(with: RotateGesture()
+                .updating($gestureRotation) {  value, state, _ in
+                    let rotation = value.rotation
+                    if rotation.radians.isFinite {
+                        state = rotation
+                    }
+                }
+                .onEnded { value in
+                    let rotation = value.rotation
+                    if rotation.radians.isFinite {
+                        rotationAngle += rotation
                         commitState?()
+                    } else {
+                        print("Invalid gesture rotation in .onEnded: \(rotation)")
                     }
-                    .simultaneously(
-                        with: MagnifyGesture()
-                            .updating($gestureScale) { value, state, _ in
-                                state = min(max(value.magnification, minScale), maxScale)
-                            }
-                            .onEnded { value in
-                                let newValue = currentScale * value.magnification
-                                guard newValue > minScale && newValue < maxScale else { return }
-                                currentScale = newValue
-                                commitState?()
-                            }
-                    )
-                    .simultaneously(with:
-                        RotateGesture()
-                        .updating($gestureRotation) {  value, state, _ in
-                            let rotation = value.rotation
-                            if rotation.radians.isFinite {
-                                state = rotation
-                            }
-                        }
-                        .onEnded { value in
-                            let rotation = value.rotation
-                            if rotation.radians.isFinite {
-                                rotationAngle += rotation
-                                commitState?()
-                            } else {
-                                print("Invalid gesture rotation in .onEnded: \(rotation)")
-                            }
-                        }
-                    )
+                }
             )
     }
 }
