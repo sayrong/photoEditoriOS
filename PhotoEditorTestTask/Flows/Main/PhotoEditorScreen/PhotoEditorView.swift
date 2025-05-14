@@ -139,7 +139,7 @@ struct PhotoEditorView: View {
                          commitState: viewModel.commitState)
             .disabled(viewModel.editMode != .move)
             
-            DrawingCompoment(toolPickerVisible: $toolPickIsVisible,
+            DrawingCanvasView(toolPickerVisible: $toolPickIsVisible,
                              drawing: $viewModel.photoState.drawning,
                              commitState: viewModel.commitState)
                 .disabled(viewModel.editMode != .markup)
