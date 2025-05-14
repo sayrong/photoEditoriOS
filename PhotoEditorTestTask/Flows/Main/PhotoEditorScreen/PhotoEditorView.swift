@@ -15,20 +15,17 @@ struct PhotoEditorView: View {
     init(viewModel: PhotoEditorViewModel) {
         self.viewModel = viewModel
     }
-    
-    @State var sliderValue: CGFloat = 0
+
     @State private var isFilterControlEnabled = false
     @State private var isIntensityControlEnabled = false
-    @State private var selectedFilter: FilterType?
-    
-    @State private var toolPickIsVisible: Bool = false
+    @State private var isToolPickIsVisible: Bool = false
     
     var body: some View {
         VStack(spacing: 0) {
             editControls()
             canvas()
             if isFilterControlEnabled {
-                FilterControlsView(isIntensityControlEnabled: isIntensityControlEnabled)
+                filterControlsView(isIntensityControlEnabled: isIntensityControlEnabled)
             }
             editModePanel()
         }
@@ -39,7 +36,6 @@ struct PhotoEditorView: View {
         .onChange(of: viewModel.photoState.filter) { _, newValue in
             handleFilterChange(newValue)
         }
-
     }
     
     private func handleEditModeChange(_ oldValue: EditMode?, _ newValue: EditMode?) {
@@ -53,7 +49,7 @@ struct PhotoEditorView: View {
             viewModel.commitState()
         }
         
-        toolPickIsVisible = newValue == .markup
+        isToolPickIsVisible = newValue == .markup
     }
 
     private func handleFilterChange(_ newValue: FilterType?) {
@@ -65,60 +61,18 @@ struct PhotoEditorView: View {
         }
     }
 
-    @ViewBuilder
-    func undoRedoViews() -> some View {
-        HStack {
-            Button {
-                viewModel.undo()
-            } label: {
-                Image(systemName: "arrow.uturn.backward")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 20, height: 20)
-                    .padding(.horizontal, 12)
-            }
-            .buttonStyle(CustomButtonStyle())
-            .disabled(!viewModel.canUndo())
-            
-            Button {
-                viewModel.redo()
-            } label: {
-                Image(systemName: "arrow.uturn.forward")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 20, height: 20)
-                    .padding(.horizontal, 12)
-            }
-            .buttonStyle(CustomButtonStyle())
-            .disabled(!viewModel.canRedo())
-        }
-        .padding(.leading)
-    }
-    
-    func editControls() -> some View {
+    private func editControls() -> some View {
         HStack {
             switch viewModel.editMode {
             case .move:
                 undoRedoViews()
                 Spacer()
-            case .crop:
-                Spacer()
-            case .filters:
+            case .crop, .filters:
                 Spacer()
             case .markup:
                 undoRedoViews()
                 Spacer()
-                Button {
-                    viewModel.editMode = nil
-                } label: {
-                    Image(systemName: "xmark")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 20, height: 20)
-                        .padding(.horizontal, 12)
-                }
-                .buttonStyle(CustomButtonStyle())
-                
+                closeMarkUpButton()
             case nil:
                 undoRedoViews()
                 Spacer()
@@ -129,9 +83,27 @@ struct PhotoEditorView: View {
         .background(.black)
     }
     
-    func canvas() -> some View {
+    private func undoRedoViews() -> some View {
+        HStack {
+            SymbolButton("arrow.uturn.backward") {
+                viewModel.undo()
+            }.disabled(!viewModel.canUndo())
+            
+            SymbolButton("arrow.uturn.forward") {
+                viewModel.redo()
+            }.disabled(!viewModel.canRedo())
+        }
+        .padding(.leading)
+    }
+    
+    private func closeMarkUpButton() -> some View {
+        SymbolButton("xmark") {
+            viewModel.editMode = nil
+        }
+    }
+    
+    private func canvas() -> some View {
         ZStack {
-            Color.clear //
             MovableImage(image: viewModel.currentImage(),
                          position: $viewModel.photoState.position,
                          currentScale: $viewModel.photoState.scale,
@@ -139,17 +111,17 @@ struct PhotoEditorView: View {
                          commitState: viewModel.commitState)
             .disabled(viewModel.editMode != .move)
             
-            DrawingCanvasView(toolPickerVisible: $toolPickIsVisible,
-                             drawing: $viewModel.photoState.drawning,
-                             commitState: viewModel.commitState)
-                .disabled(viewModel.editMode != .markup)
+            DrawingCanvasView(toolPickerVisible: $isToolPickIsVisible,
+                              drawing: $viewModel.photoState.drawning,
+                              commitState: viewModel.commitState)
+            .allowsHitTesting(viewModel.editMode == .markup)
         }
-        .clipped() // обрезает всё, что выходит за пределы
-        .contentShape(Rectangle()) // чтобы жесты работали только внутри
+        .clipped()
+        .contentShape(Rectangle())
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
-    func editModePanel() -> some View {
+    private func editModePanel() -> some View {
         HStack(spacing: 10) {
             ForEach(EditMode.allCases, id: \.self) { mode in
                 Button {
@@ -169,30 +141,16 @@ struct PhotoEditorView: View {
         .background(.black)
     }
 
-    @ViewBuilder
-    private func FilterControlsView(isIntensityControlEnabled: Bool) -> some View {
+    private func filterControlsView(isIntensityControlEnabled: Bool) -> some View {
         VStack(spacing: 0) {
             if isIntensityControlEnabled {
-                filterIntensity()
+                IntensitySlider(filter: $viewModel.photoState.filter)
             }
             filterTypes()
         }
     }
     
-    func filterIntensity() -> some View {
-        Slider(value: $sliderValue, in: 0.0...1.0, onEditingChanged: { editing in
-            if !editing {
-                viewModel.photoState.filter = .sepia(sliderValue)
-            }
-        })
-        .onAppear {
-            if case .sepia(let value) = viewModel.photoState.filter {
-                sliderValue = value
-            }
-        }
-    }
-    
-    func filterTypes() -> some View {
+    private func filterTypes() -> some View {
         ScrollView(.horizontal) {
             HStack(spacing: 10) {
                 Button {

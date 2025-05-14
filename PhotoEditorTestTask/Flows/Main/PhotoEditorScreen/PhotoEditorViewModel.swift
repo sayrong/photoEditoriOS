@@ -17,9 +17,9 @@ final class PhotoEditorViewModel: ObservableObject {
     private var stateManager: PhotoEditStateManager
     
     private var originalImage: UIImage
-    private var processedImage: (UIImage, CropInfo)?
     
-    private var filteredImage: (UIImage, FilterType, CropInfo?)?
+    private var croppedImageCache: (UIImage, CropInfo)?
+    private var filteredImageCache: (UIImage, FilterType, CropInfo?)?
     
     @Published var editMode: EditMode?
     @Published var photoState: PhotoEditState
@@ -47,38 +47,41 @@ final class PhotoEditorViewModel: ObservableObject {
         return filteredImage
     }
     
-    func applyCrop() -> UIImage {
-        guard let cropInfo = photoState.crop else {
-            return originalImage
-        }
-        if let processedImage, processedImage.1 == cropInfo {
-            return processedImage.0
-        }
-        var cropImage: UIImage?
-        if cropInfo.mode == .circle {
-            cropImage = originalImage.cropToCircle(cropRect: cropInfo.rect)
+    private func applyCrop() -> UIImage {
+        guard let cropInfo = photoState.crop else { return originalImage }
+        if let cached = croppedImageCache, cached.1 == cropInfo { return cached.0 }
+
+        let result = cropImage(with: cropInfo)
+            
+        if let result {
+            croppedImageCache = (result, cropInfo)
         } else {
-            cropImage = originalImage.cropToSquare(cropRect: cropInfo.rect)
+            assertionFailure("crop failure")
         }
-        if let cropImage {
-            processedImage = (cropImage, cropInfo)
-        } else {
-            assertionFailure()
-        }
-        return cropImage ?? originalImage
+        return result ?? originalImage
     }
-    
-    func applyFilter(image: UIImage) -> UIImage {
+
+    private func cropImage(with info: CropInfo) -> UIImage? {
+        switch info.mode {
+        case .circle, .landscape, .portrait:
+            return originalImage.cropToCircle(cropRect: info.rect)
+        case .square:
+            return originalImage.cropToSquare(cropRect: info.rect)
+        }
+    }
+
+    private func applyFilter(image: UIImage) -> UIImage {
         guard let filterInfo = photoState.filter else {
             return image
         }
-        if let filteredImage, filteredImage.2 == photoState.crop, filteredImage.1 == filterInfo {
-            return filteredImage.0
+        if let filteredImageCache, filteredImageCache.2 == photoState.crop, filteredImageCache.1 == filterInfo {
+            return filteredImageCache.0
         }
+        
         let filerImage = image.apply(filter: filterInfo)
         
         if let filerImage {
-            filteredImage = (filerImage, filterInfo, photoState.crop)
+            filteredImageCache = (filerImage, filterInfo, photoState.crop)
         } else {
             assertionFailure()
         }
