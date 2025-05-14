@@ -36,6 +36,7 @@ typealias AuthStateChangeHandler = (User?) -> Void
 typealias AuthStateListenerHandle = UUID
 
 protocol IAuthService {
+    func currentUser() -> User?
     func login(_ email: String, _ password: String) async -> Result<User, AuthError>
     func signInWithGoogle(presentingControllerProvider: PresentingControllerProvider) async -> Result<User, AuthError>
     func register(_ email: String, _ password: String) async -> Result<User, AuthError>
@@ -53,6 +54,11 @@ final class FirebaseAuthService: IAuthService {
     
     init() {
         setupFirebaseAuthListener()
+    }
+    
+    func currentUser() -> User? {
+        guard let firebaseUser = Auth.auth().currentUser else { return nil }
+        return User(id: firebaseUser.uid, email: firebaseUser.email ?? "")
     }
 
     // Soon deprecated

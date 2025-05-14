@@ -34,6 +34,10 @@ final class MockValidator: IUserCredentialsValidator {
 }
 
 final class MockAuthService: IAuthService {
+    func currentUser() -> User? {
+        return User(id: "124", email: "vv@qq.com")
+    }
+    
     func refreshUserToken() { }
     
     func addAuthStateChangeListener(_ handler: @escaping AuthStateChangeHandler) -> AuthStateListenerHandle {

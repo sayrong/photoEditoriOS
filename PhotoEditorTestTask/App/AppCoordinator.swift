@@ -22,6 +22,8 @@ final class AppCoordinator: ObservableObject {
     
     init(container: DependencyContainer = .shared) {
         self.container = container
+        self.authService = container.authService()
+        updateCurrentFlow()
         subscribeToAuthStateChanges()
     }
 
@@ -56,10 +58,15 @@ final class AppCoordinator: ObservableObject {
         currentFlow = .auth
     }
     
-    private func subscribeToAuthStateChanges() {
-        if authService == nil {
-            authService = container.authService()
+    private func updateCurrentFlow() {
+        if let user = authService?.currentUser() {
+            switchToMain()
+        } else {
+            switchToAuth()
         }
+    }
+    
+    private func subscribeToAuthStateChanges() {
         authStateListenerHandle = authService?.addAuthStateChangeListener { [weak self] user in
             guard let self = self else { return }
 
