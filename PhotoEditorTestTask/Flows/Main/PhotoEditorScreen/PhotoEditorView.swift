@@ -21,6 +21,8 @@ struct PhotoEditorView: View {
     @State private var isIntensityControlEnabled = false
     @State private var selectedFilter: FilterType?
     
+    @State private var toolPickIsVisible: Bool = false
+    
     var body: some View {
         VStack(spacing: 0) {
             editControls()
@@ -50,6 +52,8 @@ struct PhotoEditorView: View {
         if oldValue == .filters {
             viewModel.commitState()
         }
+        
+        toolPickIsVisible = newValue == .markup
     }
 
     private func handleFilterChange(_ newValue: FilterType?) {
@@ -102,7 +106,19 @@ struct PhotoEditorView: View {
             case .filters:
                 Spacer()
             case .markup:
+                undoRedoViews()
                 Spacer()
+                Button {
+                    viewModel.editMode = nil
+                } label: {
+                    Image(systemName: "xmark")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 20, height: 20)
+                        .padding(.horizontal, 12)
+                }
+                .buttonStyle(CustomButtonStyle())
+                
             case nil:
                 undoRedoViews()
                 Spacer()
@@ -122,6 +138,11 @@ struct PhotoEditorView: View {
                          rotationAngle: $viewModel.photoState.rotation,
                          commitState: viewModel.commitState)
             .disabled(viewModel.editMode != .move)
+            
+            DrawingCompoment(toolPickerVisible: $toolPickIsVisible,
+                             drawing: $viewModel.photoState.drawning,
+                             commitState: viewModel.commitState)
+                .disabled(viewModel.editMode != .markup)
         }
         .clipped() // обрезает всё, что выходит за пределы
         .contentShape(Rectangle()) // чтобы жесты работали только внутри

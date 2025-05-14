@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import PencilKit
 
 struct CropInfo: Equatable {
     var mode: CropMode
@@ -18,6 +19,7 @@ struct PhotoEditState: Equatable {
     var rotation: Angle = .zero
     var crop: CropInfo?
     var filter: FilterType?
+    var drawning: PKDrawing?
 }
 
 final class PhotoEditStateManager {
