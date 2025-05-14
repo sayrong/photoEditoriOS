@@ -23,6 +23,7 @@ final class CropViewModel: ObservableObject {
     init(image: UIImage, onCrop: ((CropInfo) -> Void)?, onCancel: (() -> Void)?) {
         self.image = image
         self.onCrop = onCrop
+        self.onCancel = onCancel
     }
     
     func defineCrop() {

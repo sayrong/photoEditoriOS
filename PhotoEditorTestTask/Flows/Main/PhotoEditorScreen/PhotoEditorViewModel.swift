@@ -13,26 +13,39 @@ protocol PhotoEditorCoordinatorDelegate: AnyObject {
 
 final class PhotoEditorViewModel: ObservableObject {
     
-    private weak var delegate: PhotoEditorCoordinatorDelegate?
-    private var stateManager: PhotoEditStateManager
+    private weak var coordinator: PhotoEditorCoordinatorDelegate?
+    private var stateManager: IPhotoEditStateManager
+    private var imageService: IImageEditingService
     
     private var originalImage: UIImage
     
-    private var croppedImageCache: (UIImage, CropInfo)?
-    private var filteredImageCache: (UIImage, FilterType, CropInfo?)?
-    
-    @Published var editMode: EditMode?
+    @Published var editMode: EditMode? {
+        didSet {
+            handleEditModeChange(oldValue, editMode)
+        }
+    }
     @Published var photoState: PhotoEditState
     
-    init(originalImage: UIImage, delegate: PhotoEditorCoordinatorDelegate?) {
+    init(originalImage: UIImage, delegate: PhotoEditorCoordinatorDelegate?,
+         stateManager: IPhotoEditStateManager, imageService: IImageEditingService) {
         self.originalImage = originalImage
-        self.delegate = delegate
-        self.stateManager = PhotoEditStateManager()
+        self.coordinator = delegate
+        self.stateManager = stateManager
+        self.imageService = imageService
         self.photoState = stateManager.current
     }
     
-    func startCropping() {
-        delegate?.presentCropper(with: originalImage,
+    private func handleEditModeChange(_ oldValue: EditMode?, _ newValue: EditMode?) {
+        if newValue == .crop {
+            startCropping()
+        }
+        if oldValue == .filters {
+            commitState()
+        }
+    }
+    
+    private func startCropping() {
+        coordinator?.presentCropper(with: originalImage,
                                  onComplete: { [weak self] result in
             guard let self = self else { return }
             self.photoState.crop = result
@@ -41,51 +54,8 @@ final class PhotoEditorViewModel: ObservableObject {
         })
     }
     
-    func currentImage() -> UIImage {
-        let croppedImage = applyCrop()
-        let filteredImage = applyFilter(image: croppedImage)
-        return filteredImage
-    }
-    
-    private func applyCrop() -> UIImage {
-        guard let cropInfo = photoState.crop else { return originalImage }
-        if let cached = croppedImageCache, cached.1 == cropInfo { return cached.0 }
-
-        let result = cropImage(with: cropInfo)
-            
-        if let result {
-            croppedImageCache = (result, cropInfo)
-        } else {
-            assertionFailure("crop failure")
-        }
-        return result ?? originalImage
-    }
-
-    private func cropImage(with info: CropInfo) -> UIImage? {
-        switch info.mode {
-        case .circle, .landscape, .portrait:
-            return originalImage.cropToCircle(cropRect: info.rect)
-        case .square:
-            return originalImage.cropToSquare(cropRect: info.rect)
-        }
-    }
-
-    private func applyFilter(image: UIImage) -> UIImage {
-        guard let filterInfo = photoState.filter else {
-            return image
-        }
-        if let filteredImageCache, filteredImageCache.2 == photoState.crop, filteredImageCache.1 == filterInfo {
-            return filteredImageCache.0
-        }
-        
-        let filerImage = image.apply(filter: filterInfo)
-        
-        if let filerImage {
-            filteredImageCache = (filerImage, filterInfo, photoState.crop)
-        } else {
-            assertionFailure()
-        }
-        return filerImage ?? image
+    func renderedImage() -> UIImage {
+        imageService.processImage(image: originalImage, editState: photoState)
     }
     
     func canUndo() -> Bool {

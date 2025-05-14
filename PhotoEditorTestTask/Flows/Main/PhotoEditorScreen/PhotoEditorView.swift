@@ -18,7 +18,7 @@ struct PhotoEditorView: View {
 
     @State private var isFilterControlEnabled = false
     @State private var isIntensityControlEnabled = false
-    @State private var isToolPickIsVisible: Bool = false
+    @State private var isToolPickerVisible: Bool = false
     
     var body: some View {
         VStack(spacing: 0) {
@@ -39,17 +39,10 @@ struct PhotoEditorView: View {
     }
     
     private func handleEditModeChange(_ oldValue: EditMode?, _ newValue: EditMode?) {
-        if newValue == .crop {
-            viewModel.startCropping()
-        }
         withAnimation {
             isFilterControlEnabled = newValue == .filters
         }
-        if oldValue == .filters {
-            viewModel.commitState()
-        }
-        
-        isToolPickIsVisible = newValue == .markup
+        isToolPickerVisible = newValue == .markup
     }
 
     private func handleFilterChange(_ newValue: FilterType?) {
@@ -104,14 +97,14 @@ struct PhotoEditorView: View {
     
     private func canvas() -> some View {
         ZStack {
-            MovableImage(image: viewModel.currentImage(),
+            MovableImage(image: viewModel.renderedImage(),
                          position: $viewModel.photoState.position,
                          currentScale: $viewModel.photoState.scale,
                          rotationAngle: $viewModel.photoState.rotation,
                          commitState: viewModel.commitState)
             .disabled(viewModel.editMode != .move)
             
-            DrawingCanvasView(toolPickerVisible: $isToolPickIsVisible,
+            DrawingCanvasView(toolPickerVisible: $isToolPickerVisible,
                               drawing: $viewModel.photoState.drawning,
                               commitState: viewModel.commitState)
             .allowsHitTesting(viewModel.editMode == .markup)
@@ -175,5 +168,5 @@ struct PhotoEditorView: View {
 }
 
 #Preview {
-    PhotoEditorView(viewModel: PhotoEditorViewModel(originalImage: UIImage(named: "gotta.JPG")!, delegate: nil))
+    PhotoEditorView(viewModel: .preview())
 }

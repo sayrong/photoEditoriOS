@@ -82,7 +82,9 @@ final class MainCoordinator: ObservableObject {
     
     private func editorView(for img: UIImage) -> some View {
         if editorVM == nil {
-            editorVM = PhotoEditorViewModel(originalImage: img, delegate: self)
+            editorVM = PhotoEditorViewModel(originalImage: img, delegate: self,
+                                            stateManager: PhotoEditStateManager(),
+                                            imageService: ImageEditingService())
         }
         return PhotoEditorView(viewModel: editorVM!)
     }
