@@ -90,7 +90,8 @@ struct PhotoEditorView: View {
                 viewModel.addText()
             }
             
-            ColorPickerView()
+            ColorPicker("", selection: viewModel.colorBinding())
+                .labelsHidden()
                 .frame(width: 0, height: 0)
                 .opacity(viewModel.selectedTextId != nil ? 1 : 0)
                 .animation(.easeInOut, value: viewModel.selectedTextId)

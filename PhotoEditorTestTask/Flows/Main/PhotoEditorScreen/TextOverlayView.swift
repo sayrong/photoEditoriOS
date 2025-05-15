@@ -12,7 +12,6 @@ struct TextOverlayView: View {
     @Binding var selectedId: UUID?
     
     @State var isEditing: Bool = true
-    @State var color: Color = .white
     
     var commitState: (() -> Void)?
     
@@ -32,7 +31,7 @@ struct TextOverlayView: View {
             if isEditing {
                 TextField("", text: $text.text)
                     .font(.system(size: 24))
-                    .foregroundColor(color)
+                    .foregroundColor(text.color)
                     .padding(12)
                     .background(Color.black.opacity(0.3))
                     .cornerRadius(6)
@@ -41,7 +40,7 @@ struct TextOverlayView: View {
             } else {
                 Text(text.text)
                     .font(.system(size: 24))
-                    .foregroundColor(color)
+                    .foregroundColor(text.color)
             }
         }
         .contentShape(Rectangle())
@@ -54,47 +53,21 @@ struct TextOverlayView: View {
             isEditing = true
         }
         .onAppear {
-            syncColorWithModel()
             if isEditing {
                 isTextFieldFocused = true
                 selectedId = text.id
-                sendColorToPicker()
+            }
+        }
+        .onChange(of: isEditing) { _, isEditing in
+            if isEditing {
+                selectedId = text.id
+            } else {
+                commitState?()
             }
         }
         .onChange(of: selectedId) { _, newValue in
             // если выбрали другой текст - выйти из режима редактирования
             isEditing = (newValue == text.id)
-        }
-        .onChange(of: isEditing) { _, newValue in
-            if newValue {
-                // включили редактирование — зарегистрировать себя как выбранного
-                selectedId = text.id
-                sendColorToPicker()
-            } else {
-                text.color = color
-                commitState?()
-            }
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .colorDidChange)) { notification in
-            guard isEditing else { return }
-            if let userInfo = notification.userInfo,
-               let uiColor = userInfo["color"] as? UIColor {
-                color = Color(uiColor)
-            }
-        }
-    }
-    
-    private func sendColorToPicker() {
-        NotificationCenter.default.post(
-            name: .currentActiveElementColor,
-            object: nil,
-            userInfo: ["color": UIColor(color)]
-        )
-    }
-    
-    private func syncColorWithModel() {
-        if color != text.color {
-            color = text.color
         }
     }
     

@@ -54,6 +54,31 @@ final class PhotoEditorViewModel: ObservableObject {
             self.editMode = nil
         })
     }
+
+    // Создает Binding для ColorPicker
+    func colorBinding() -> Binding<Color> {
+        Binding(
+            get: { [weak self] in
+                self?.getSelectedTextColor() ?? .white
+            },
+            set: { [weak self] newValue in
+                self?.updateSelectedTextColor(newValue)
+            }
+        )
+    }
+    
+    private func getSelectedTextColor() -> Color {
+        if let id = selectedTextId, let text = photoState.texts.first(where: { $0.id == id }) {
+            return text.color
+        }
+        return .white
+    }
+    
+    private func updateSelectedTextColor(_ newColor: Color) {
+        if let id = selectedTextId, let index = photoState.texts.firstIndex(where: { $0.id == id }) {
+            photoState.texts[index].color = newColor
+        }
+    }
     
     func addText() {
         let text = PhotoText(
