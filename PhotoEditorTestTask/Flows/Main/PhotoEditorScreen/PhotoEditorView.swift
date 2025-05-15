@@ -85,6 +85,15 @@ struct PhotoEditorView: View {
             SymbolButton("arrow.uturn.forward") {
                 viewModel.redo()
             }.disabled(!viewModel.canRedo())
+            
+            SymbolButton("textformat.size.larger") {
+                viewModel.addText()
+            }
+            
+            ColorPickerView()
+                .frame(width: 0, height: 0)
+                .opacity(viewModel.selectedTextId != nil ? 1 : 0)
+                .animation(.easeInOut, value: viewModel.selectedTextId)
         }
         .padding(.leading)
     }
@@ -108,10 +117,19 @@ struct PhotoEditorView: View {
                               drawing: $viewModel.photoState.drawning,
                               commitState: viewModel.commitState)
             .allowsHitTesting(viewModel.editMode == .markup)
+            
+            ForEach($viewModel.photoState.texts) { $text in
+                TextOverlayView(text: $text,
+                                selectedId: $viewModel.selectedTextId,
+                                commitState: viewModel.commitState)
+                }
         }
         .clipped()
         .contentShape(Rectangle())
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .onTapGesture {
+            viewModel.tappedOutsideText()
+        }
     }
     
     private func editModePanel() -> some View {

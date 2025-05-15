@@ -14,4 +14,5 @@ struct PhotoEditState: Equatable {
     var crop: CropInfo?
     var filter: FilterType?
     var drawning: PKDrawing?
+    var texts: [PhotoText] = []
 }

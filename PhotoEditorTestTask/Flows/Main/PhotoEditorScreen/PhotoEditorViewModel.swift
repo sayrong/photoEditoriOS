@@ -25,6 +25,7 @@ final class PhotoEditorViewModel: ObservableObject {
         }
     }
     @Published var photoState: PhotoEditState
+    @Published var selectedTextId: UUID?
     
     init(originalImage: UIImage, delegate: PhotoEditorCoordinatorDelegate?,
          stateManager: IPhotoEditStateManager, imageService: IImageEditingService) {
@@ -54,6 +55,24 @@ final class PhotoEditorViewModel: ObservableObject {
         })
     }
     
+    func addText() {
+        let text = PhotoText(
+            text: "",
+            offset: CGSize(width: 0, height: 0),
+            scale: 1.0,
+            rotation: .zero,
+            color: .white
+        )
+        photoState.texts.append(text)
+        selectedTextId = text.id
+    }
+    
+    func tappedOutsideText() {
+        if selectedTextId != nil {
+            selectedTextId = nil
+        }
+    }
+    
     func renderedImage() -> UIImage {
         imageService.processImage(image: originalImage, editState: photoState)
     }
@@ -77,6 +96,14 @@ final class PhotoEditorViewModel: ObservableObject {
     }
     
     func commitState() {
+        handleEmptyTexts()
         stateManager.commitState(photoState)
+    }
+    
+    private func handleEmptyTexts() {
+        guard !photoState.texts.isEmpty else {
+            return
+        }
+        photoState.texts = photoState.texts.filter { !$0.text.isEmpty }
     }
 }
