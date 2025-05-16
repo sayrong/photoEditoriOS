@@ -20,7 +20,7 @@ struct PhotoEditorView: View {
     @State private var isFilterControlEnabled = false
     @State private var isIntensityControlEnabled = false
     @State private var isToolPickerVisible: Bool = false
-    @State private var showShareSheet = false
+    @State private var exportedImage: IdentifiableImage?
     
     var body: some View {
         VStack(spacing: 0) {
@@ -41,9 +41,8 @@ struct PhotoEditorView: View {
         .onChange(of: viewModel.currentPhotoState.filter) { _, newValue in
             handleFilterChange(newValue)
         }
-        .sheet(isPresented: $showShareSheet) {
-            let image = viewModel.exportCanvas()
-            ShareSheet(activityItems: [image])
+        .sheet(item: $exportedImage) { value in
+            ShareSheet(activityItems: [value.image])
         }
     }
     
@@ -80,7 +79,8 @@ struct PhotoEditorView: View {
                 Spacer()
             }
             SymbolButton("square.and.arrow.up") {
-                showShareSheet.toggle()
+                let canvasImage = viewModel.exportCanvas()
+                exportedImage = .init(image: canvasImage)
             }
         }
         .padding(.trailing, 30)
