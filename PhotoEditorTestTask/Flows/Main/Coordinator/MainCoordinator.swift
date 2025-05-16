@@ -44,8 +44,6 @@ final class MainCoordinator: ObservableObject {
     @Published var presentedSheet: Route?
     @Published var presentedFullScreen: Route?
     
-    private var editorVM: PhotoEditorViewModel?
-    
     @ViewBuilder
     func view(for route: Route) -> some View {
         switch route {
@@ -81,13 +79,11 @@ final class MainCoordinator: ObservableObject {
     }
     
     private func editorView(for img: UIImage) -> some View {
-        if editorVM == nil {
-            editorVM = PhotoEditorViewModel(originalImage: img, delegate: self,
+        let editorVM = PhotoEditorViewModel(originalImage: img, delegate: self,
                                             stateManager: PhotoEditStateManager(),
                                             imageService: ImageEditingService(),
                                             exportService: ImageExportService())
-        }
-        return PhotoEditorView(viewModel: editorVM!)
+        return PhotoEditorView(viewModel: editorVM)
     }
     
     private func cropView(for image: UIImage, with onComplete: @escaping (CropInfo) -> Void) -> some View {
