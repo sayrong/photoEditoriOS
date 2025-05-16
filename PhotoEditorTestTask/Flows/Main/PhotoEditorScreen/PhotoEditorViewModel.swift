@@ -19,44 +19,44 @@ final class PhotoEditorViewModel: ObservableObject {
     private var imageService: IImageEditingService
     private var exportService: IImageExportService
     
-    private var originalImage: UIImage
+    private var sourceImage: UIImage
     var canvasView: PKCanvasView
     var canvasSize: CGSize = .zero
     
     @Published var editMode: EditMode? {
         didSet {
-            handleEditModeChange(oldValue, editMode)
+            onEditModeChanged(oldValue, editMode)
         }
     }
-    @Published var photoState: PhotoEditState
-    @Published var selectedTextId: UUID?
+    @Published var currentPhotoState: PhotoEditState
+    @Published var activeTextId: UUID?
     
     init(originalImage: UIImage, delegate: PhotoEditorCoordinatorDelegate?,
          stateManager: IPhotoEditStateManager, imageService: IImageEditingService, exportService: IImageExportService) {
-        self.originalImage = originalImage
+        self.sourceImage = originalImage
         self.coordinator = delegate
         self.stateManager = stateManager
         self.imageService = imageService
         self.exportService = exportService
-        self.photoState = stateManager.current
+        self.currentPhotoState = stateManager.current
         self.canvasView = .init()
     }
     
-    private func handleEditModeChange(_ oldValue: EditMode?, _ newValue: EditMode?) {
+    private func onEditModeChanged(_ oldValue: EditMode?, _ newValue: EditMode?) {
         if newValue == .crop {
-            startCropping()
+            presentCropper()
         }
         if oldValue == .filters {
             commitState()
         }
     }
     
-    private func startCropping() {
-        coordinator?.presentCropper(with: originalImage,
+    private func presentCropper() {
+        coordinator?.presentCropper(with: sourceImage,
                                  onComplete: { [weak self] result in
             guard let self = self else { return }
-            self.photoState.crop = result
-            self.stateManager.commitState(self.photoState)
+            self.currentPhotoState.crop = result
+            self.stateManager.commitState(self.currentPhotoState)
             self.editMode = nil
         })
     }
@@ -73,15 +73,15 @@ final class PhotoEditorViewModel: ObservableObject {
     }
     
     private func getSelectedTextColor() -> Color {
-        if let id = selectedTextId, let text = photoState.texts.first(where: { $0.id == id }) {
+        if let id = activeTextId, let text = currentPhotoState.texts.first(where: { $0.id == id }) {
             return text.color
         }
         return .white
     }
     
     private func updateSelectedTextColor(_ newColor: Color) {
-        if let id = selectedTextId, let index = photoState.texts.firstIndex(where: { $0.id == id }) {
-            photoState.texts[index].color = newColor
+        if let id = activeTextId, let index = currentPhotoState.texts.firstIndex(where: { $0.id == id }) {
+            currentPhotoState.texts[index].color = newColor
         }
     }
     
@@ -93,18 +93,18 @@ final class PhotoEditorViewModel: ObservableObject {
             rotation: .zero,
             color: .white
         )
-        photoState.texts.append(text)
-        selectedTextId = text.id
+        currentPhotoState.texts.append(text)
+        activeTextId = text.id
     }
     
-    func tappedOutsideText() {
-        if selectedTextId != nil {
-            selectedTextId = nil
+    func deselectText() {
+        if activeTextId != nil {
+            activeTextId = nil
         }
     }
     
     func renderedImage() -> UIImage {
-        imageService.processImage(image: originalImage, editState: photoState)
+        imageService.processImage(image: sourceImage, editState: currentPhotoState)
     }
     
     func canUndo() -> Bool {
@@ -117,30 +117,30 @@ final class PhotoEditorViewModel: ObservableObject {
     
     func undo() {
         stateManager.undo()
-        photoState = stateManager.current
+        currentPhotoState = stateManager.current
     }
     
     func redo() {
         stateManager.redo()
-        photoState = stateManager.current
+        currentPhotoState = stateManager.current
     }
     
     func commitState() {
-        handleEmptyTexts()
-        stateManager.commitState(photoState)
+        removeEmptyTexts()
+        stateManager.commitState(currentPhotoState)
     }
     
-    private func handleEmptyTexts() {
-        guard !photoState.texts.isEmpty else {
+    private func removeEmptyTexts() {
+        guard !currentPhotoState.texts.isEmpty else {
             return
         }
-        photoState.texts = photoState.texts.filter { !$0.text.isEmpty }
+        currentPhotoState.texts = currentPhotoState.texts.filter { !$0.text.isEmpty }
     }
     
     func exportCanvas() -> UIImage {
         exportService.exportCanvas(canvasSize: canvasSize,
                                    canvasView: canvasView,
                                    image: renderedImage(),
-                                   photoState: photoState)
+                                   photoState: currentPhotoState)
     }
 }

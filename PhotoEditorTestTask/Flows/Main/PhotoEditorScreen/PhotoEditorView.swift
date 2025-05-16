@@ -38,7 +38,7 @@ struct PhotoEditorView: View {
         .onChange(of: viewModel.editMode) { oldValue, newValue in
             handleEditModeChange(oldValue, newValue)
         }
-        .onChange(of: viewModel.photoState.filter) { _, newValue in
+        .onChange(of: viewModel.currentPhotoState.filter) { _, newValue in
             handleFilterChange(newValue)
         }
         .sheet(isPresented: $showShareSheet) {
@@ -105,8 +105,8 @@ struct PhotoEditorView: View {
             ColorPicker("", selection: viewModel.colorBinding())
                 .labelsHidden()
                 .frame(width: 0, height: 0)
-                .opacity(viewModel.selectedTextId != nil ? 1 : 0)
-                .animation(.easeInOut, value: viewModel.selectedTextId)
+                .opacity(viewModel.activeTextId != nil ? 1 : 0)
+                .animation(.easeInOut, value: viewModel.activeTextId)
         }
         .padding(.leading)
     }
@@ -120,20 +120,20 @@ struct PhotoEditorView: View {
     private func canvas() -> some View {
         ZStack {
             MovableImage(image: viewModel.renderedImage(),
-                         position: $viewModel.photoState.position,
-                         currentScale: $viewModel.photoState.scale,
-                         rotationAngle: $viewModel.photoState.rotation,
+                         position: $viewModel.currentPhotoState.position,
+                         currentScale: $viewModel.currentPhotoState.scale,
+                         rotationAngle: $viewModel.currentPhotoState.rotation,
                          commitState: viewModel.commitState)
             .disabled(viewModel.editMode != .move)
             
             DrawingCanvasView(canvasView: $viewModel.canvasView, toolPickerVisible: $isToolPickerVisible,
-                              drawing: $viewModel.photoState.drawning,
+                              drawing: $viewModel.currentPhotoState.drawning,
                               commitState: viewModel.commitState)
             .allowsHitTesting(viewModel.editMode == .markup)
             
-            ForEach($viewModel.photoState.texts) { $text in
+            ForEach($viewModel.currentPhotoState.texts) { $text in
                 TextOverlayView(text: $text,
-                                selectedId: $viewModel.selectedTextId,
+                                selectedId: $viewModel.activeTextId,
                                 commitState: viewModel.commitState)
                 }
         }
@@ -141,7 +141,7 @@ struct PhotoEditorView: View {
         .contentShape(Rectangle())
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onTapGesture {
-            viewModel.tappedOutsideText()
+            viewModel.deselectText()
         }
     }
     
@@ -168,7 +168,7 @@ struct PhotoEditorView: View {
     private func filterControlsView(isIntensityControlEnabled: Bool) -> some View {
         VStack(spacing: 0) {
             if isIntensityControlEnabled {
-                IntensitySlider(filter: $viewModel.photoState.filter)
+                IntensitySlider(filter: $viewModel.currentPhotoState.filter)
             }
             filterTypes()
         }
@@ -178,13 +178,13 @@ struct PhotoEditorView: View {
         ScrollView(.horizontal) {
             HStack(spacing: 10) {
                 Button {
-                    viewModel.photoState.filter = nil
+                    viewModel.currentPhotoState.filter = nil
                 } label: {
                     Text("Orig")
                 }
                 ForEach(FilterType.allCases, id: \.self) { type in
                     Button {
-                        viewModel.photoState.filter = type
+                        viewModel.currentPhotoState.filter = type
                     } label: {
                         Text(type.displayName)
                     }
