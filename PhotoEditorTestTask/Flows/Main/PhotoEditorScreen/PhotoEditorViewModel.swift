@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import PencilKit
 
 protocol PhotoEditorCoordinatorDelegate: AnyObject {
     func presentCropper(with image: UIImage, onComplete: @escaping (CropInfo) -> Void)
@@ -16,8 +17,11 @@ final class PhotoEditorViewModel: ObservableObject {
     private weak var coordinator: PhotoEditorCoordinatorDelegate?
     private var stateManager: IPhotoEditStateManager
     private var imageService: IImageEditingService
+    private var exportService: IImageExportService
     
     private var originalImage: UIImage
+    var canvasView: PKCanvasView
+    var canvasSize: CGSize = .zero
     
     @Published var editMode: EditMode? {
         didSet {
@@ -28,12 +32,14 @@ final class PhotoEditorViewModel: ObservableObject {
     @Published var selectedTextId: UUID?
     
     init(originalImage: UIImage, delegate: PhotoEditorCoordinatorDelegate?,
-         stateManager: IPhotoEditStateManager, imageService: IImageEditingService) {
+         stateManager: IPhotoEditStateManager, imageService: IImageEditingService, exportService: IImageExportService) {
         self.originalImage = originalImage
         self.coordinator = delegate
         self.stateManager = stateManager
         self.imageService = imageService
+        self.exportService = exportService
         self.photoState = stateManager.current
+        self.canvasView = .init()
     }
     
     private func handleEditModeChange(_ oldValue: EditMode?, _ newValue: EditMode?) {
@@ -55,7 +61,6 @@ final class PhotoEditorViewModel: ObservableObject {
         })
     }
 
-    // Создает Binding для ColorPicker
     func colorBinding() -> Binding<Color> {
         Binding(
             get: { [weak self] in
@@ -130,5 +135,12 @@ final class PhotoEditorViewModel: ObservableObject {
             return
         }
         photoState.texts = photoState.texts.filter { !$0.text.isEmpty }
+    }
+    
+    func exportCanvas() -> UIImage {
+        exportService.exportCanvas(canvasSize: canvasSize,
+                                   canvasView: canvasView,
+                                   image: renderedImage(),
+                                   photoState: photoState)
     }
 }

@@ -10,6 +10,7 @@ import PencilKit
 
 struct DrawingCanvasView: UIViewRepresentable {
     
+    @Binding var canvasView: PKCanvasView
     @Binding var toolPickerVisible: Bool
     @Binding var drawing: PKDrawing?
     var commitState: (() -> Void)?
@@ -21,12 +22,10 @@ struct DrawingCanvasView: UIViewRepresentable {
     func makeUIView(context: Context) -> PKCanvasView {
         setupCanvasView(context)
         setupToolPicker(context)
-        return context.coordinator.canvasView
+        return canvasView
     }
     
     private func setupCanvasView(_ context: Context) {
-        let canvasView = context.coordinator.canvasView
-        
         canvasView.delegate = context.coordinator
         canvasView.drawing = drawing ?? PKDrawing()
         canvasView.drawingPolicy = .anyInput
@@ -40,7 +39,6 @@ struct DrawingCanvasView: UIViewRepresentable {
     
     private func setupToolPicker(_ context: Context) {
         let toolPicker = context.coordinator.toolPicker
-        let canvasView = context.coordinator.canvasView
         
         toolPicker.setVisible(toolPickerVisible, forFirstResponder: canvasView)
         toolPicker.showsDrawingPolicyControls = true
@@ -68,7 +66,6 @@ struct DrawingCanvasView: UIViewRepresentable {
     
     private func updateToolPicker(context: Context) {
         let toolPicker = context.coordinator.toolPicker
-        let canvasView = context.coordinator.canvasView
         
         if toolPickerVisible != toolPicker.isVisible {
             toolPicker.setVisible(toolPickerVisible, forFirstResponder: canvasView)
@@ -79,13 +76,12 @@ struct DrawingCanvasView: UIViewRepresentable {
 extension DrawingCanvasView {
     
     class Coordinator: NSObject, PKCanvasViewDelegate {
-        let canvasView: PKCanvasView
+        
         let toolPicker: PKToolPicker
         
         var parent: DrawingCanvasView
 
         init(parent: DrawingCanvasView) {
-            canvasView = PKCanvasView()
             toolPicker = PKToolPicker()
             self.parent = parent
         }

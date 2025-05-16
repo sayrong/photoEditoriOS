@@ -84,7 +84,8 @@ final class MainCoordinator: ObservableObject {
         if editorVM == nil {
             editorVM = PhotoEditorViewModel(originalImage: img, delegate: self,
                                             stateManager: PhotoEditStateManager(),
-                                            imageService: ImageEditingService())
+                                            imageService: ImageEditingService(),
+                                            exportService: ImageExportService())
         }
         return PhotoEditorView(viewModel: editorVM!)
     }

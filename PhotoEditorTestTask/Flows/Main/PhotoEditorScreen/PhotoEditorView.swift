@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Combine
+import PencilKit
 
 struct PhotoEditorView: View {
     
@@ -19,11 +20,15 @@ struct PhotoEditorView: View {
     @State private var isFilterControlEnabled = false
     @State private var isIntensityControlEnabled = false
     @State private var isToolPickerVisible: Bool = false
+    @State private var showShareSheet = false
     
     var body: some View {
         VStack(spacing: 0) {
             editControls()
             canvas()
+                .readSize { newSize in
+                    viewModel.canvasSize = newSize
+                }
             if isFilterControlEnabled {
                 filterControlsView(isIntensityControlEnabled: isIntensityControlEnabled)
             }
@@ -35,6 +40,10 @@ struct PhotoEditorView: View {
         }
         .onChange(of: viewModel.photoState.filter) { _, newValue in
             handleFilterChange(newValue)
+        }
+        .sheet(isPresented: $showShareSheet) {
+            let image = viewModel.exportCanvas()
+            ShareSheet(activityItems: [image])
         }
     }
     
@@ -69,6 +78,9 @@ struct PhotoEditorView: View {
             case nil:
                 undoRedoViews()
                 Spacer()
+            }
+            SymbolButton("square.and.arrow.up") {
+                showShareSheet.toggle()
             }
         }
         .padding(.trailing, 30)
@@ -114,7 +126,7 @@ struct PhotoEditorView: View {
                          commitState: viewModel.commitState)
             .disabled(viewModel.editMode != .move)
             
-            DrawingCanvasView(toolPickerVisible: $isToolPickerVisible,
+            DrawingCanvasView(canvasView: $viewModel.canvasView, toolPickerVisible: $isToolPickerVisible,
                               drawing: $viewModel.photoState.drawning,
                               commitState: viewModel.commitState)
             .allowsHitTesting(viewModel.editMode == .markup)

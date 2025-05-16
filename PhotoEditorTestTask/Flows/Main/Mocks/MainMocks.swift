@@ -12,6 +12,7 @@ extension PhotoEditorViewModel {
         PhotoEditorViewModel(originalImage: UIImage(named: "gotta.JPG")!,
                              delegate: nil,
                              stateManager: PhotoEditStateManager(),
-                             imageService: ImageEditingService())
+                             imageService: ImageEditingService(),
+                             exportService: ImageExportService())
     }
 }
