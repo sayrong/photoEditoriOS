@@ -5,25 +5,25 @@
 //  Created by DmitrySK on 25.04.2025.
 //
 
-final class MockRegistrationCoordinatorDelegate: RegistrationCoordinatorDelegate {
+final class PMockRegistrationCoordinatorDelegate: RegistrationCoordinatorDelegate {
     func registerDidComplete() {}
     func registrationDidFail(with message: AlertMessage) {}
 }
 
-final class MockLoginCoordinatorDelegate: LoginCoordinatorDelegate {
+final class PMockLoginCoordinatorDelegate: LoginCoordinatorDelegate {
     func loginDidFail(with message: AlertMessage) {}
     func loginDidComplete() {}
     func forgotPasswordRequested() {}
     func registrationRequested() {}
 }
 
-final class MockPasswordResetCoordinatorDelegate: PasswordResetCoordinatorDelegate {
+final class PMockPasswordResetCoordinatorDelegate: PasswordResetCoordinatorDelegate {
     func passwordResetDidCancel() {}
     func passwordResetDidComplete(with message: AlertMessage) {}
     func passwordResetDidFail(with message: AlertMessage) {}
 }
 
-final class MockValidator: IUserCredentialsValidator {
+final class PMockValidator: IUserCredentialsValidator {
     func isValidEmail(_ email: String) -> Bool {
         return false
     }
@@ -33,7 +33,7 @@ final class MockValidator: IUserCredentialsValidator {
     }
 }
 
-final class MockAuthService: IAuthService {
+final class PMockAuthService: IAuthService {
     func currentUser() -> User? {
         return User(id: "124", email: "vv@qq.com")
     }
@@ -69,24 +69,24 @@ final class MockAuthService: IAuthService {
 
 extension RegistrationViewModel {
     static func preview() -> RegistrationViewModel {
-        RegistrationViewModel(delegate: MockRegistrationCoordinatorDelegate(),
-                                                       validator: MockValidator(),
-                                                       authService: MockAuthService())
+        RegistrationViewModel(delegate: PMockRegistrationCoordinatorDelegate(),
+                                                       validator: PMockValidator(),
+                                                       authService: PMockAuthService())
     }
 }
 
 extension LoginViewModel {
     static func preview() -> LoginViewModel {
-        LoginViewModel(delegate: MockLoginCoordinatorDelegate(),
-                       validator: MockValidator(),
-                       authService: MockAuthService())
+        LoginViewModel(delegate: PMockLoginCoordinatorDelegate(),
+                       validator: PMockValidator(),
+                       authService: PMockAuthService())
     }
 }
 
 extension PasswordResetViewModel {
     static func preview() -> PasswordResetViewModel {
-        PasswordResetViewModel(delegate: MockPasswordResetCoordinatorDelegate(),
-                               validator: MockValidator(),
-                               authService: MockAuthService())
+        PasswordResetViewModel(delegate: PMockPasswordResetCoordinatorDelegate(),
+                               validator: PMockValidator(),
+                               authService: PMockAuthService())
     }
 }
