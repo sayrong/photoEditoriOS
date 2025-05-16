@@ -119,7 +119,7 @@ struct PhotoEditorView: View {
     
     private func canvas() -> some View {
         ZStack {
-            MovableImage(image: viewModel.renderedImage(),
+            MovableImage(image: viewModel.processedImage,
                          position: $viewModel.currentPhotoState.position,
                          currentScale: $viewModel.currentPhotoState.scale,
                          rotationAngle: $viewModel.currentPhotoState.rotation,

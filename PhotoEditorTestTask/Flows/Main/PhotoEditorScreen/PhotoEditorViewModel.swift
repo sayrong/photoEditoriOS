@@ -28,8 +28,13 @@ final class PhotoEditorViewModel: ObservableObject {
             onEditModeChanged(oldValue, editMode)
         }
     }
-    @Published var currentPhotoState: PhotoEditState
+    @Published var currentPhotoState: PhotoEditState {
+        didSet {
+            onPhotoStateChanged(oldValue, currentPhotoState)
+        }
+    }
     @Published var activeTextId: UUID?
+    @Published var processedImage: UIImage
     
     init(originalImage: UIImage, delegate: PhotoEditorCoordinatorDelegate?,
          stateManager: IPhotoEditStateManager, imageService: IImageEditingService, exportService: IImageExportService) {
@@ -40,6 +45,7 @@ final class PhotoEditorViewModel: ObservableObject {
         self.exportService = exportService
         self.currentPhotoState = stateManager.current
         self.canvasView = .init()
+        self.processedImage = sourceImage
     }
     
     private func onEditModeChanged(_ oldValue: EditMode?, _ newValue: EditMode?) {
@@ -48,6 +54,16 @@ final class PhotoEditorViewModel: ObservableObject {
         }
         if oldValue == .filters {
             commitState()
+        }
+    }
+
+    private func onPhotoStateChanged(_ oldValue: PhotoEditState, _ newValue: PhotoEditState) {
+        // Only update image if crop or filter changed
+        if currentPhotoState.crop != oldValue.crop ||
+            currentPhotoState.filter != oldValue.filter {
+            Task { [weak self] in
+                await self?.updateProcessedImage()
+            }
         }
     }
     
@@ -103,8 +119,14 @@ final class PhotoEditorViewModel: ObservableObject {
         }
     }
     
-    func renderedImage() -> UIImage {
-        imageService.processImage(image: sourceImage, editState: currentPhotoState)
+    @MainActor
+    func updateProcessedImage() async {
+        do {
+            let image = try await imageService.processImage(image: sourceImage, editState: currentPhotoState)
+            self.processedImage = image
+        } catch {
+            assertionFailure("Failed to process image: \(error)")
+        }
     }
     
     func canUndo() -> Bool {
@@ -140,7 +162,7 @@ final class PhotoEditorViewModel: ObservableObject {
     func exportCanvas() -> UIImage {
         exportService.exportCanvas(canvasSize: canvasSize,
                                    canvasView: canvasView,
-                                   image: renderedImage(),
+                                   image: processedImage,
                                    photoState: currentPhotoState)
     }
 }
