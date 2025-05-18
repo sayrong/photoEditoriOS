@@ -52,12 +52,12 @@ struct PhotoEditorView: View {
                         let canvasImage = viewModel.exportCanvas()
                         exportedImage = .init(image: canvasImage)
                     } label: {
-                        Label("Export", systemImage: "square.and.arrow.up")
+                        Label(L10n.export, systemImage: "square.and.arrow.up")
                     }
                     Button {
                         didLogout.toggle()
                     } label: {
-                        Label("Logout", systemImage: "person.crop.circle.badge.xmark")
+                        Label(L10n.logout, systemImage: "person.crop.circle.badge.xmark")
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")
@@ -65,11 +65,11 @@ struct PhotoEditorView: View {
                 }
             }
         }
-        .alert("Are you sure you want to log out?", isPresented: $didLogout) {
-            Button("Log out") {
+        .alert(L10n.areYouSureYouWantToLogOut, isPresented: $didLogout) {
+            Button(L10n.logOut) {
                 viewModel.logoutDidTap()
             }
-            Button("Cancel") { }
+            Button(L10n.cancel) { }
         }
     }
     

@@ -46,7 +46,7 @@ extension UIImage {
         guard let ciImage = CIImage(image: inputImage) else { return nil }
 
         guard let coreImageFilter = CIFilter(name: filter.ciFilterName) else {
-            print("Фильтр $filter.ciFilterName) не найден")
+            print("Filter \(filter.ciFilterName) was not found")
             return nil
         }
 

@@ -34,7 +34,7 @@ struct ImageSelectionView: View {
                 .frame(width: 100, height: 100)
                 .foregroundColor(.gray)
 
-            Text("Выберите изображение, чтобы начать редактирование")
+            Text(L10n.selectAnImageToStartEditing)
                 .multilineTextAlignment(.center)
                 .font(.headline)
                 .foregroundColor(.secondary)
@@ -47,14 +47,14 @@ struct ImageSelectionView: View {
             Button {
                 viewModel.fromLibraryDidTap()
             } label: {
-                WideButtonText("Выбрать фото")
+                WideButtonText(L10n.selectPhoto)
             }
             .primaryButtonStyle()
             
             Button {
                 viewModel.fromCameraDidTap()
             } label: {
-                WideButtonText("Сделать фото")
+                WideButtonText(L10n.takeAPhoto)
             }
             .secondaryButtonStyle()
         }

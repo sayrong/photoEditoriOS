@@ -36,3 +36,10 @@
 "Passwords don't match" = "Пароли не совпадают";
 "OK" = "OK";
 "Password reset have been sent" = "Инструкции по сбросу пароля были отправлены на вашу электронную почту";
+"Select an image to start editing" = "Выберите изображение, чтобы начать редактирование";
+"Select Photo" = "Выбрать фото";
+"Take a Photo" = "Сделать фото";
+"Export" = "Поделиться";
+"Logout" = "Выход из системы";
+"Are you sure you want to log out?" = "Вы уверены, что хотите выйти из системы?";
+"Log out" = "Выйти";
