@@ -18,6 +18,7 @@ class MockValidator: IUserCredentialsValidator {
 final class MockAuthService: IAuthService {
     var currentUserStub: User? = nil
     var loginResult: Result<User, AuthError> = .failure(.invalidCredentials)
+    var logoutResult: Result<Void, AuthError> = .failure(.invalidCredentials)
     var googleSignInResult: Result<User, AuthError> = .failure(.invalidCredentials)
     var registerResult: Result<User, AuthError> = .failure(.invalidCredentials)
     var passwordResetResult: Result<Void, AuthError> = .failure(.networkError)
@@ -26,6 +27,9 @@ final class MockAuthService: IAuthService {
     var addAuthStateChangeListenerHandler: ((AuthStateChangeHandler) -> AuthStateListenerHandle)?
     var removeAuthStateChangeListenerHandler: ((AuthStateListenerHandle) -> Void)?
     var refreshUserTokenCalled = false
+    
+    var didLogoutHandler: (() -> Void)?
+    var logoutCalled = false
 
     func currentUser() -> User? {
         return currentUserStub
@@ -33,6 +37,12 @@ final class MockAuthService: IAuthService {
     
     func login(_ email: String, _ password: String) async -> Result<User, AuthError> {
         return loginResult
+    }
+    
+    func logout() async -> Result<Void, PhotoEditorTestTask.AuthError> {
+        logoutCalled = true
+        didLogoutHandler?()
+        return logoutResult
     }
     
     func signInWithGoogle(presentingControllerProvider: PresentingControllerProvider) async -> Result<User, AuthError> {

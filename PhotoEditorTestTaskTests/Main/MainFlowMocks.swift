@@ -44,9 +44,17 @@ class MockCoordinator: PhotoEditorCoordinatorDelegate {
     var lastImage: UIImage?
     var onComplete: ((CropInfo) -> Void)?
 
+    var didLogoutFailHandler: ((AlertMessage) -> Void)?
+    var didLogoutCalled = false
+
     func presentCropper(with image: UIImage, onComplete: @escaping (CropInfo) -> Void) {
         presentCropperCalled = true
         lastImage = image
         self.onComplete = onComplete
+    }
+    
+    func logoutDidFail(with message: PhotoEditorTestTask.AlertMessage) {
+        didLogoutCalled = true
+        didLogoutFailHandler?(message)
     }
 }

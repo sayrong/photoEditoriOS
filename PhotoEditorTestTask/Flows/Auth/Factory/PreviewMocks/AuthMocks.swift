@@ -58,6 +58,10 @@ final class PMockAuthService: IAuthService {
         return .success(User(id: "124", email: "vv@qq.com"))
     }
     
+    func logout() async -> Result<Void, AuthError> {
+        return .success(())
+    }
+    
     func isEmailValidForRegistration(_ email: String) async -> Result<Bool, AuthError> {
         return .success(true)
     }

@@ -13,6 +13,7 @@ extension PhotoEditorViewModel {
                              delegate: nil,
                              stateManager: PhotoEditStateManager(),
                              imageService: ImageEditingService(),
-                             exportService: ImageExportService())
+                             exportService: ImageExportService(),
+                             authService: PMockAuthService())
     }
 }

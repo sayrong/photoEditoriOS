@@ -26,8 +26,8 @@ struct MainCoordinatorView: View {
                 }
                 .fullScreenCover(item: $coordinator.presentedFullScreen) { route in
                     coordinator.view(for: route)
-                    
                 }
+                .alert(item: $coordinator.mainAlertMessage) { $0.makeAlert() }
         }
     }
 }

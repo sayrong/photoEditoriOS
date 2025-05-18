@@ -10,6 +10,7 @@ import PencilKit
 
 protocol PhotoEditorCoordinatorDelegate: AnyObject {
     func presentCropper(with image: UIImage, onComplete: @escaping (CropInfo) -> Void)
+    func logoutDidFail(with message: AlertMessage)
 }
 
 final class PhotoEditorViewModel: ObservableObject {
@@ -18,6 +19,7 @@ final class PhotoEditorViewModel: ObservableObject {
     private var stateManager: IPhotoEditStateManager
     private var imageService: IImageEditingService
     private var exportService: IImageExportService
+    private var authService: IAuthService
     
     private var sourceImage: UIImage
     var canvasView: PKCanvasView
@@ -37,12 +39,14 @@ final class PhotoEditorViewModel: ObservableObject {
     @Published var processedImage: UIImage
     
     init(originalImage: UIImage, delegate: PhotoEditorCoordinatorDelegate?,
-         stateManager: IPhotoEditStateManager, imageService: IImageEditingService, exportService: IImageExportService) {
+         stateManager: IPhotoEditStateManager, imageService: IImageEditingService,
+         exportService: IImageExportService, authService: IAuthService) {
         self.sourceImage = originalImage
         self.coordinator = delegate
         self.stateManager = stateManager
         self.imageService = imageService
         self.exportService = exportService
+        self.authService = authService
         self.currentPhotoState = stateManager.current
         self.canvasView = .init()
         self.processedImage = sourceImage
@@ -164,5 +168,23 @@ final class PhotoEditorViewModel: ObservableObject {
                                    canvasView: canvasView,
                                    image: processedImage,
                                    photoState: currentPhotoState)
+    }
+    
+    func logoutDidTap() {
+        Task { [weak self] in
+            guard let self else { return }
+            
+            let result = await authService.logout()
+            
+            await MainActor.run {
+                switch result {
+                case .success:
+                    break
+                case .failure(let authError):
+                    let error = AlertMessage(title: L10n.error, message: authError.userMessage)
+                    self.coordinator?.logoutDidFail(with: error)
+                }
+            }
+        }
     }
 }

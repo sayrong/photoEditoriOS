@@ -38,6 +38,7 @@ typealias AuthStateListenerHandle = UUID
 protocol IAuthService {
     func currentUser() -> User?
     func login(_ email: String, _ password: String) async -> Result<User, AuthError>
+    func logout() async -> Result<Void, AuthError>
     func signInWithGoogle(presentingControllerProvider: PresentingControllerProvider) async -> Result<User, AuthError>
     func register(_ email: String, _ password: String) async -> Result<User, AuthError>
     func sendPasswordReset(withEmail email: String) async -> Result<Void, AuthError>
@@ -90,6 +91,16 @@ final class FirebaseAuthService: IAuthService {
             let authData = try await Auth.auth().signIn(withEmail: email, password: password)
             let user = User(id: authData.user.uid, email: authData.user.email ?? "")
             return .success(user)
+        } catch {
+            print(error.localizedDescription)
+            return .failure(mapErrorToAuthError(error))
+        }
+    }
+    
+    func logout() async -> Result<Void, AuthError> {
+        do {
+            try Auth.auth().signOut()
+            return .success(())
         } catch {
             print(error.localizedDescription)
             return .failure(mapErrorToAuthError(error))

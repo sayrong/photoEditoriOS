@@ -43,6 +43,7 @@ final class MainCoordinator: ObservableObject {
     @Published var path: [Route] = []
     @Published var presentedSheet: Route?
     @Published var presentedFullScreen: Route?
+    @Published var mainAlertMessage: AlertMessage?
     
     @ViewBuilder
     func view(for route: Route) -> some View {
@@ -82,7 +83,8 @@ final class MainCoordinator: ObservableObject {
         let editorVM = PhotoEditorViewModel(originalImage: img, delegate: self,
                                             stateManager: PhotoEditStateManager(),
                                             imageService: ImageEditingService(),
-                                            exportService: ImageExportService())
+                                            exportService: ImageExportService(),
+                                            authService: DependencyContainer.shared.authService())
         return PhotoEditorView(viewModel: editorVM)
     }
     
@@ -111,5 +113,9 @@ extension MainCoordinator: PhotoEditorCoordinatorDelegate {
     
     func presentCropper(with image: UIImage, onComplete: @escaping (CropInfo) -> Void) {
         presentedSheet = .crop(image, onComplete)
+    }
+    
+    func logoutDidFail(with message: AlertMessage) {
+        mainAlertMessage = message
     }
 }

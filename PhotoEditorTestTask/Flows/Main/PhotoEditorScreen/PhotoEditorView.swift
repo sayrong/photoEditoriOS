@@ -21,6 +21,7 @@ struct PhotoEditorView: View {
     @State private var isIntensityControlEnabled = false
     @State private var isToolPickerVisible: Bool = false
     @State private var exportedImage: IdentifiableImage?
+    @State private var didLogout = false
     
     var body: some View {
         VStack(spacing: 0) {
@@ -43,6 +44,32 @@ struct PhotoEditorView: View {
         }
         .sheet(item: $exportedImage) { value in
             ShareSheet(activityItems: [value.image])
+        }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Menu {
+                    Button {
+                        let canvasImage = viewModel.exportCanvas()
+                        exportedImage = .init(image: canvasImage)
+                    } label: {
+                        Label("Export", systemImage: "square.and.arrow.up")
+                    }
+                    Button {
+                        didLogout.toggle()
+                    } label: {
+                        Label("Logout", systemImage: "person.crop.circle.badge.xmark")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                        .imageScale(.large)
+                }
+            }
+        }
+        .alert("Are you sure you want to log out?", isPresented: $didLogout) {
+            Button("Log out") {
+                viewModel.logoutDidTap()
+            }
+            Button("Cancel") { }
         }
     }
     
@@ -77,10 +104,6 @@ struct PhotoEditorView: View {
             case nil:
                 undoRedoViews()
                 Spacer()
-            }
-            SymbolButton("square.and.arrow.up") {
-                let canvasImage = viewModel.exportCanvas()
-                exportedImage = .init(image: canvasImage)
             }
         }
         .padding(.trailing, 30)
