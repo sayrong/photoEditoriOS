@@ -7,12 +7,6 @@
 
 import SwiftUI
 
-struct AlertMessage: Identifiable {
-    let id = UUID()
-    let title: String
-    let message: String
-}
-
 final class AuthCoordinator: ObservableObject {
     
     enum Route: Identifiable {

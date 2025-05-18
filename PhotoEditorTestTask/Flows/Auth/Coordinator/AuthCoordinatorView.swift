@@ -28,13 +28,3 @@ struct AuthCoordinatorView: View {
         }
     }
 }
-
-extension AlertMessage {
-    func makeAlert() -> Alert {
-        Alert(
-            title: Text(self.title),
-            message: Text(self.message),
-            dismissButton: .default(Text(L10n.ok))
-        )
-    }
-}
