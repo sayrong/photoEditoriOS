@@ -126,7 +126,8 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0AD16B862DB296D20034C0B9 /* Build configuration list for PBXNativeTarget "PhotoEditorTestTask" */;
 			buildPhases = (
-				0AC8F0A92DB3A0DF005CFA17 /* ShellScript */,
+				0A6BE8342DDB4E7900449002 /* Swiftgen */,
+				0AC8F0A92DB3A0DF005CFA17 /* Lint */,
 				0AD16B742DB296D10034C0B9 /* Sources */,
 				0AD16B752DB296D10034C0B9 /* Frameworks */,
 				0AD16B762DB296D10034C0B9 /* Resources */,
@@ -212,7 +213,25 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		0AC8F0A92DB3A0DF005CFA17 /* ShellScript */ = {
+		0A6BE8342DDB4E7900449002 /* Swiftgen */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = Swiftgen;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nif which swiftgen > /dev/null; then\n  swiftgen\nelse\n  echo \"warning: SwiftGen not installed, download it via Homebrew or Mint\"\nfi\n";
+		};
+		0AC8F0A92DB3A0DF005CFA17 /* Lint */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -222,6 +241,7 @@
 			);
 			inputPaths = (
 			);
+			name = Lint;
 			outputFileListPaths = (
 			);
 			outputPaths = (
